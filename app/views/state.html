@@ -3,7 +3,7 @@
     <div class="col-sm-4 col-lg-4 col-md-4"  ng-repeat='station in stations' >
         <div class="thumbnail">
             <div class="ratings">
-            <p class="pull-right">Months of Data : {{station.months.length}}</p>
+            <p class="pull-right">Years of Data : {{station.years.length}}</p>
                 <p><a href="#/state/{{state.state_fips}}"> Station ID : {{station.stationId}}</a>
                 </p>
             </div>
@@ -11,11 +11,11 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>Year</th><th>Month</th><th># of trucks</th>
+                            <th>Year</th><th>Completeness</th><th>AADT</th>
                         </tr>
                     <thead>
-                    <tr ng-repeat='month in station.months'>
-                        <td>20{{month.year}}</td><td>{{month.month}}<td>{{month.numTrucks | number}}<td>
+                    <tr ng-repeat='year in station.years'>
+                        <td>20{{year.year}}</td><td>{{year.percent | number}}<td>{{year.AADT | number}}<td>
                     </tr>
                 </table>
                 </p>
