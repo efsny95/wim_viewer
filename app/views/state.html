@@ -1,16 +1,23 @@
 <div class="row">
 
-    <div class="col-sm-4 col-lg-4 col-md-4" ><!-- ng-repeat='station in stations'-->
+    <div class="col-sm-4 col-lg-4 col-md-4"  ng-repeat='station in stations' >
         <div class="thumbnail">
             <div class="ratings">
-            <p class="pull-right">Months of Data : </p>
-                <p><a href="#/state/{{state.state_fips}}"> Station ID</a>
+            <p class="pull-right">Months of Data : {{station.months.length}}</p>
+                <p><a href="#/state/{{state.state_fips}}"> Station ID : {{station.stationId}}</a>
                 </p>
             </div>
             <div class="caption">
-                
-                <p ng-repeat='month in station.months'>
-                    month.year month.month - month.count
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Year</th><th>Month</th><th># of trucks</th>
+                        </tr>
+                    <thead>
+                    <tr ng-repeat='month in station.months'>
+                        <td>20{{month.year}}</td><td>{{month.month}}<td>{{month.numTrucks | number}}<td>
+                    </tr>
+                </table>
                 </p>
             </div>
         </div>
