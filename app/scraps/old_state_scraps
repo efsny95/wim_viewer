@@ -88,3 +88,60 @@ getStateStations:function(req,res){
                 });
             });
         });
+
+
+
+
+      var data = d3.nest() 
+        .key(function(d) { return d.Date; })
+        .rollup(function(d) { return (d[0].Close - d[0].Open) / d[0].Open; })
+        .map(input_data); //This line is what parses and organizes the data used to color the calendar
+      console.log(data)
+      console.log(input_data);
+
+      rect.filter(function(d) { return format(d) in data; })
+          .attr("class", function(d) { 
+            //console.log('hello',color(data[format(d)])); 
+            return "day q" + color(data[format(d)]) + "-11"; })
+        .select("title")
+          .text(function(d) { return d + ": " + percent(data[d]); });
+        
+
+
+
+        d3.csv("scripts/resources/dji.csv", function(csv) {
+          input_data.rows.forEach(function(row){
+          /*var data = d3.nest() 
+            .key(function(d) {
+                var string = ""
+          */   if(row.f[2].v < 10){
+                    if(row.f[3].v < 10){
+                    string= "20"+row.f[0].v[0]+row.f[0].v[1]+"-0"+row.f[2].v+"-0"+row.f[3].v
+                    }
+                    else{
+                    string = "20"+row.f[0].v[0]+row.f[0].v[1]+"-0"+row.f[2].v+"-"+row.f[3].v
+                    }
+             }
+             else{
+                    if(row.f[3].v < 10){
+                    string = "20"+row.f[0].v[0]+row.f[0].v[1]+"-"+row.f[2].v+"-0"+row.f[3].v
+                    }
+                    else{
+                    string = "20"+row.f[0].v[0]+row.f[0].v[1]+"-"+row.f[2].v+"-"+row.f[3].v
+                    }
+                }
+          /*    return string; }) //Creates key value
+            .rollup(function(d) { return row.f[1].v; }) //create pair value
+            .map(csv); //Turns code into an array of objects
+                */  //console.log(row);
+            row.f[0].v = string
+            console.log(row);
+
+          rect.filter(function() { return row.f[0].v; })
+              .attr("class", function() { 
+                //console.log('hello',(data[format(d)])); 
+                return "day q" + color(row.f[1].v) + "-11"; })
+            .select("title") //Creates hover icon
+              .text(function(d) { return row.f[0].v + ": " + row.f[1].v; }); //creates hover icon
+        });
+        });
