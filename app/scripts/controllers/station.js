@@ -23,15 +23,20 @@ angular.module('wimViewerApp')
      $scope.stationData = data;
      calCreate($scope.myClass,data)
     });
+
+    // create graph object and draw a graph
+    $scope.grapher = wim.grapher('#wimgraph');
+    $scope.grapher.drawGraph($scope.station);
+
     $scope.loadCalendar = function(){
-      calCreate($scope.myClass,$scope.stationData)
+      //calCreate($scope.myClass,$scope.stationData)
     }
   });
     //console.log($scope.myClass)
+
   function calCreate(classT,data){
+      return;
     	wimCalendar.drawCalendar(parseData(data,classT));
-      console.log(classT)
-      console.log(data)
   		//console.log($scope.stateFips);
   		// data.rows.forEach(function(row){
   		// 	var date = row.f[0].v;

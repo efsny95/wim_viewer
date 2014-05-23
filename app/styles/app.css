@@ -44,3 +44,32 @@ body {
 footer {
   margin: 50px 0;
 }
+
+#wimgraph {
+  height: 400px;
+  background-color: #eef;
+  margin: 20px;
+  position: relative;
+}
+#navBar {
+  text-align: center;
+  font-weight: bold;
+  font-size: 12pt;
+  padding-bottom: 5px;
+  position: absolute;
+  background-color: #000;
+}
+#navBar a {
+  line-height:40px;
+  display: block;
+  float: right;
+  width: 60px;
+  height: 40px;
+  margin: 5px 5px 0 5px;
+  text-decoration: none;
+  background-color: #bbd;
+  color: #000;
+}
+#navBar a:hover {
+  background-color: #779;
+}
