@@ -25,7 +25,7 @@ angular.module('wimViewerApp')
     });
 
     // create graph object and draw a graph
-    $scope.grapher = wim.grapher('#wimgraph');
+    $scope.grapher = wimgraph.grapher('#wimgraph');
     $scope.grapher.drawGraph($scope.station);
 
     $scope.loadCalendar = function(){
