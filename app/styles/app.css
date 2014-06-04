@@ -131,3 +131,35 @@ footer {
   font-size: 24pt;
   display: none;
 }
+
+#statesDIV {
+  position: relative;
+  margin: 0 0 20px 0;
+}
+#mapSVG {
+  display: block;
+}
+
+.state {
+  stroke: #666;
+  stroke-width: 1px;
+}
+.state-hover {
+  fill: #fee391;
+}
+.state-active {
+  fill: #fe9929;
+}
+
+.popup {
+  font-size: 12pt;
+  display: none;
+  height: 40px;
+  line-height: 20px;
+  padding: 5px 0;
+  text-align: center;
+  width: 170px;
+  position: absolute;
+  background-color: #6baed6;
+  border: solid 5px #081d58;
+}
