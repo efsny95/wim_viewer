@@ -14,7 +14,7 @@
 		height = 600;
 
 	var projection = d3.geo.albersUsa()
-		.scale(2 << 9)
+		.scale(1 << 10)
 		.translate([width/2, height/2]);
 
 	var path = d3.geo.path()
@@ -91,18 +91,14 @@
 
 		function _getStationPoints(d) {
 			var URL = 'http://localhost:1337/stations/stateGeo/';
-
-            d3.xhr(URL + d.id)
-                .response(function(request) {
-                    return JSON.parse(request.responseText);
-                })
-                .get(function(error, data) {
-                	if (error) {
-                		console.log(error);
-                		return;
-                	}
-                	_formatData(d, data);
-                });
+			
+			wimXHR.get(URL + d.id, function(error, data) {
+            	if (error) {
+            		console.log(error);
+            		return;
+            	}
+            	_formatData(d, data);
+			})
 		}
 
 		function _formatData(stateData, stationData) {
@@ -135,15 +131,11 @@
 					noGeoFor.push(obj);
 				}
 			})
-			// console.log('state', stateData)
-			// console.log('stations', stationData)
-			// console.log('no geo for', noGeoFor);
 
 			_drawStationPoints(collection);
 		}
 
 		function _drawStationPoints(collection) {
-			// console.log('collection', collection)
 			var stations = SVG.selectAll('circle')
 				.data(collection.features);
 
@@ -190,29 +182,25 @@
 
 		  	var stations = [];
 
-            d3.xhr(URL + id)
-                .response(function(request) {
-                    return JSON.parse(request.responseText);
-                })
-                .get(function(error, data) {
-                	if (error) {
-                		console.log(error);
-                		return;
-                	}
-			  		data.rows.forEach(function(row){
-			  			var rowStation = row.f[0].v;
-			  			
-			  			if(getStationIndex(rowStation) == -1) {
-			  				stations.push({'stationId':rowStation, years:[]})
-			  			}
-			  			stations[getStationIndex(rowStation)].years.push({'year':row.f[1].v,'percent':(row.f[4].v)*100,'AADT':Math.round(row.f[5].v)});
-			  		});
-			  		if (centered) {
-				  		$scope.$apply(function(){
-				  			$scope.stations = stations;
-			  			});
-				  	}
-                });
+			wimXHR.get(URL + id, function(error, data) {
+            	if (error) {
+            		console.log(error);
+            		return;
+            	}
+		  		data.rows.forEach(function(row){
+		  			var rowStation = row.f[0].v;
+		  			
+		  			if(getStationIndex(rowStation) == -1) {
+		  				stations.push({'stationId':rowStation, years:[]})
+		  			}
+		  			stations[getStationIndex(rowStation)].years.push({'year':row.f[1].v,'percent':(row.f[4].v)*100,'AADT':Math.round(row.f[5].v)});
+		  		});
+		  		if (centered) {
+			  		$scope.$apply(function(){
+			  			$scope.stations = stations;
+		  			});
+			  	}
+			});
 
 		  	function getStationIndex(stationID){
 		  		return stations.map(function(el) {return el.stationId;}).indexOf(stationID);

@@ -2,31 +2,6 @@
     <div class="col-sm-12 col-lg-12 col-md-12">
         <div id="statesDIV"></div>
     </div>
-<!--
-    <div class="col-sm-4 col-lg-4 col-md-4" ng-repeat='state in states | filter:statefilter'>
-        <div class="thumbnail">
-            <div class="ratings">
-            <p class="pull-right">Number of Stations : {{state.stations.length}}</p>
-                <p><a href="#/state/{{state.state_fips}}"> {{state.name}}</a>
-                </p>
-            </div>
-            <div class="caption">
-                
-                <p ng-repeat='station in state.stations'>
-                    {{station.stationID}} - {{station.stationCount | number}}
-                </p>
-            </div>
-        </div>
-    </div>
--->
-<!--
-    <div class="col-sm-4 col-lg-4 col-md-4">
-        <h4><a href="#">Like this template?</a>
-        </h4>
-        <p>If you like this template, then check out <a target="_blank" href="http://maxoffsky.com/code-blog/laravel-shop-tutorial-1-building-a-review-system/">this tutorial</a> on how to build a working review system for your online store!</p>
-        <a class="btn btn-primary" target="_blank" href="http://maxoffsky.com/code-blog/laravel-shop-tutorial-1-building-a-review-system/">View Tutorial</a>
-    </div>
--->
 
     <div class="col-sm-4 col-lg-4 col-md-4"  ng-repeat='station in stations' >
         <div class="thumbnail">
@@ -52,33 +27,5 @@
     </div>
     
 </div>
-
-<!--
-<div class="row">
-
-    <div class="col-sm-4 col-lg-4 col-md-4"  ng-repeat='station in stations' >
-        <div class="thumbnail">
-            <div class="ratings">
-            <p class="pull-right">Years of Data : {{station.years.length}}</p>
-                <p><a href="#/station/{{station.stationId}}"> Station ID : {{station.stationId}}</a>
-                </p>
-            </div>
-            <div class="caption">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Year</th><th>Completeness</th><th>AADT</th>
-                        </tr>
-                    <thead>
-                    <tr ng-repeat='year in station.years'>
-                        <td>20{{year.year}}</td><td>{{year.percent | number}}<td>{{year.AADT | number}}<td>
-                    </tr>
-                </table>
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
--->
 
    
