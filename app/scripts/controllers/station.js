@@ -30,69 +30,72 @@ angular.module('wimViewerApp')
       $scope.minYear = ""
       $scope.maxYear = ""
 
-      var promise = $http.get('http://localhost:1337/stations/byStation').success(function(data, status, headers, config) {
-        $scope.minYear = data.rows[0].f[0].v
-        $scope.maxYear = data.rows[0].f[1].v
-        return data;
+      var URL = 'http://localhost:1337/stations/byStation';
+
+      wimXHR.get(URL, function(error, data) {
+          $scope.minYear = data.rows[0].f[0].v
+          $scope.maxYear = data.rows[0].f[1].v
+
+          if(parseInt($scope.minYear) < 10){
+            $scope.minYear = "0"+$scope.minYear
+          }
+          if(parseInt($scope.maxYear) < 10){
+            $scope.maxYear = "0"+$scope.maxYear
+          }
+
+          var svg = d3.select("#caldiv").selectAll("svg")
+              .data(d3.range(2000+parseInt($scope.minYear), 2001+parseInt($scope.maxYear)))
+            .enter().append("svg")
+              .attr("width", w + m[1] + m[3]+100)
+              .attr("height", h + m[0] + m[2])
+              .attr("class", "RdYlGn")
+            .append("g")
+              .attr("transform", "translate(" + (m[3] + (w - z * 53) / 2) + "," + (m[0] + (h - z * 7) / 2) + ")");
+          svg.append("text")
+              .attr("transform", "translate(-6," + z * 3.5 + ")rotate(-90)")
+              .attr("text-anchor", "middle")
+              .text(String);
+          var svg2 = d3.select("#legend").selectAll("svg")
+              .data(d3.range(0, 1))
+            .enter().append("svg")
+              .attr("width", w + m[1] + m[3]+100)
+              .attr("height", h +300)
+              .attr("class", "RdYlGn")
+            .append("g")
+              .attr("transform", "translate(" + (m[3] + (w - z * 53) / 2) + "," + (m[0] + (h - z * 7) / 2) + ")");
+          var rect = svg.selectAll("rect.day")
+              .data(function(d) { 
+                return d3.time.days(new Date(d, 0, 1), new Date(d + 1, 0, 1)); })
+            .enter().append("rect")
+              .attr("class", "day")
+              .attr("width", z)
+              .attr("height", z)
+              .attr("x", function(d) { return week(d) * z; })
+              .attr("y", function(d) { return day(d) * z; })
+              //.map(format);
+
+          rect.append("title")
+              .text(function(d) { return d; });
+
+          $scope.stationData = [];
+          $scope.myClass = $scope.values[0].id;
+          
+          wimXHR.get('http://localhost:1337/stations/byStation/'+$scope.station, function(error, data) {
+              $scope.stationData = data;
+              calCreate(rect,svg,$scope.myClass,data,day,week,percent,format,z,svg2)
+          });
+          
+          // create graph object and draw a graph
+          $scope.grapher = wimgraph.grapher('#wimgraph');
+          $scope.grapher.drawGraph($scope.station);
+
+          $scope.loadCalendar = function(){
+            calCreate(rect,svg,$scope.myClass,$scope.stationData,day,week,percent,format,z,svg2)
+          }
       });
-      promise.then(function(data){
-        //console.log($scope.minYear)
-        //console.log($scope.maxYear)
-      if(parseInt($scope.minYear) < 10){
-        $scope.minYear = "0"+$scope.minYear
-      }
-      if(parseInt($scope.maxYear) < 10){
-        $scope.maxYear = "0"+$scope.maxYear
-      }
-      //console.log($scope.minYear)
-      //console.log($scope.maxYear)
-      var svg = d3.select("#caldiv").selectAll("svg")
-          .data(d3.range(2000+parseInt($scope.minYear), 2001+parseInt($scope.maxYear)))
-        .enter().append("svg")
-          .attr("width", w + m[1] + m[3]+100)
-          .attr("height", h + m[0] + m[2])
-          .attr("class", "RdYlGn")
-        .append("g")
-          .attr("transform", "translate(" + (m[3] + (w - z * 53) / 2) + "," + (m[0] + (h - z * 7) / 2) + ")");
-      svg.append("text")
-          .attr("transform", "translate(-6," + z * 3.5 + ")rotate(-90)")
-          .attr("text-anchor", "middle")
-          .text(String);
-      var svg2 = d3.select("#legend").selectAll("svg")
-          .data(d3.range(0, 1))
-        .enter().append("svg")
-          .attr("width", w + m[1] + m[3]+100)
-          .attr("height", h +300)
-          .attr("class", "RdYlGn")
-        .append("g")
-          .attr("transform", "translate(" + (m[3] + (w - z * 53) / 2) + "," + (m[0] + (h - z * 7) / 2) + ")");
-      var rect = svg.selectAll("rect.day")
-          .data(function(d) { 
-            return d3.time.days(new Date(d, 0, 1), new Date(d + 1, 0, 1)); })
-        .enter().append("rect")
-          .attr("class", "day")
-          .attr("width", z)
-          .attr("height", z)
-          .attr("x", function(d) { return week(d) * z; })
-          .attr("y", function(d) { return day(d) * z; })
-          //.map(format);
-
-      rect.append("title")
-          .text(function(d) { return d; });
-
-    $scope.stationData = [];
-    $scope.myClass = $scope.values[0].id;
-    $http.get('http://localhost:1337/stations/byStation/'+$scope.station).success(function(data, status, headers, config) {
-    $scope.stationData = data;
-    calCreate(rect,svg,$scope.myClass,data,day,week,percent,format,z,svg2)
-    });
-
-    $scope.loadCalendar = function(){
-      calCreate(rect,svg,$scope.myClass,$scope.stationData,day,week,percent,format,z,svg2)
-    }
-  });
 });
     //console.log($scope.myClass)
+
   function calCreate(rect,svg,classT,data,day,week,percent,format,z,svg2){
           //console.log(svg)
     	wimCalendar.drawCalendar(rect,svg,parseData(data,classT),day,week,percent,format,z,svg2);
