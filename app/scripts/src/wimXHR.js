@@ -1,17 +1,20 @@
 (function() {
 	var wimXHR = {
-		version: '0.1.0'
+		version: '0.2.0'
 	}
 
 	var _DATABASE = null;
 
-	var URLbase = 'http://api.availabs.org/wim'
+	var URLbase = 'http://localhost:1337/' //'http://api.availabs.org/wim/'
 
 	wimXHR.get = function(url, callback) {
 		wimXHR.post(url, {database: _DATABASE}, callback);
 	}
 
 	wimXHR.post = function(url, data, callback) {
+		if (/^\//.test(url)) {
+			url = url.slice(1);
+		}
 		data.database = _DATABASE;
 		_getXHR(URLbase+url).post(JSON.stringify(data), function(error, data) {
 													callback(error, data);
