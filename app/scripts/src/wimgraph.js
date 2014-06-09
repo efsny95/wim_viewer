@@ -20,7 +20,7 @@
 			clicked = false,	// used to keep track of when users click on graph
 
 		// URL to retrieve graph data from
-			route = 'http://localhost:1337/stations/graphData/',
+			route = '/stations/graphData/',
 
 		// depth is an array object that is treated as a stack.
 		// as users delve deeper into graph times, the year, month, or
@@ -280,23 +280,7 @@
 		// this function retrieves the requested data from the back end API
 		function _getData() {
 			loader.style('display', 'inline')
-			/*
-            d3.xhr(route + stationID)
-                .response(function(request) {
-                    return JSON.parse(request.responseText);
-                })
-                .post(JSON.stringify({'depth': depth}), function(error, data) {
-                	if (error) {
-                		console.log(error);
-                		return;
-                	}
-                	time = TIMES[depth.length];
-
-                	formattedData = _formatData(data);
-
-                	_drawGraph();
-                });
-            */
+			
             wimXHR.post(route+stationID, {'depth': depth}, function(error, data) {
             	if (error) {
             		console.log(error);

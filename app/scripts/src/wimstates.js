@@ -90,8 +90,8 @@
 		}
 
 		function _getStationPoints(d) {
-			var URL = 'http://localhost:1337/stations/stateGeo/';
-			
+			var URL = '/stations/stateGeo/';
+
 			wimXHR.get(URL + d.id, function(error, data) {
             	if (error) {
             		console.log(error);
@@ -171,7 +171,7 @@
 		}
 
 		function _getStationData(stateData) {
-			var URL = 'http://localhost:1337/stations/byState/';
+			var URL = '/stations/byState/';
 			var id = stateData.id.toString();
 
 			var regex = /^\d$/;

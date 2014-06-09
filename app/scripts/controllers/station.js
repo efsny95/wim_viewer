@@ -30,7 +30,7 @@ angular.module('wimViewerApp')
       $scope.minYear = ""
       $scope.maxYear = ""
 
-      var URL = 'http://localhost:1337/stations/byStation';
+      var URL = '/stations/byStation';
 
       wimXHR.get(URL, function(error, data) {
           $scope.minYear = data.rows[0].f[0].v
@@ -80,7 +80,7 @@ angular.module('wimViewerApp')
           $scope.stationData = [];
           $scope.myClass = $scope.values[0].id;
           
-          wimXHR.get('http://localhost:1337/stations/byStation/'+$scope.station, function(error, data) {
+          wimXHR.get('/stations/byStation'+$scope.station, function(error, data) {
               $scope.stationData = data;
               calCreate(rect,svg,$scope.myClass,data,day,week,percent,format,z,svg2)
           });
