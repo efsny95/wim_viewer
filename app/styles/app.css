@@ -44,3 +44,129 @@ body {
 footer {
   margin: 50px 0;
 }
+#wimgraph {
+  height: auto;
+}
+#graphDIV {
+  height: 500px;
+  background-color: #999;
+  margin: 20px;
+  position: relative;
+}
+.navBar {
+  text-align: center;
+  font-weight: bold;
+  font-size: 12pt;
+  padding-bottom: 5px;
+  position: absolute;
+  background-color: #000;
+}
+.navBar a {
+  line-height:40px;
+  display: block;
+  float: right;
+  width: 60px;
+  height: 40px;
+  margin: 5px 5px 0 5px;
+  text-decoration: none;
+  background-color: #88a;
+  opacity: 0.75;
+  color: #000;
+}
+.navBar a:hover {
+  opacity: 1.0;
+}
+.navBar a.active {
+  background-color: #1a9850;
+}
+.navBar a.inactive {
+  background-color: #d73027;
+}
+#legendDIV {
+  margin: 20px;
+  position: relative;
+  height: 100px;
+}
+.legend {
+  text-align: center;
+  font-weight: bold;
+  font-size: 12pt;
+  height: 50px;
+  margin: auto;
+  padding: 5px;
+  position: absolute;
+  right: 0;
+  left: 0;
+}
+.legend a {
+  line-height:40px;
+  display: block;
+  float: left;
+  height: 40px;
+  text-decoration: none;
+  opacity: 0.75;
+  color: #000;
+  padding-left: 3px;
+}
+.legend a.class-label {
+  width: 60px;
+}
+.legend a.weight-label {
+  width: 100px;
+}
+.legend a:hover {
+  opacity: 1.0;
+}
+.legend a.inactive {
+  background-color: #d73027;
+}
+#loader {
+  height: 200px;
+  width: 200px;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  margin: auto;
+  background-color: rgba(255, 255, 255, 0.75);
+  color: rgba(0, 0, 0, 1.0);
+  position: absolute;
+  line-height: 50px;
+  padding: 50px 0;
+  text-align: center;
+  font-weight: bold;
+  font-size: 24pt;
+  display: none;
+}
+
+#statesDIV {
+  position: relative;
+  margin: 0 0 20px 0;
+}
+#mapSVG {
+  display: block;
+}
+
+.state {
+  stroke: #666;
+  stroke-width: 1px;
+}
+.state-hover {
+  fill: #fee391;
+}
+.state-active {
+  fill: #fe9929;
+}
+
+.popup {
+  font-size: 12pt;
+  display: none;
+  height: 40px;
+  line-height: 20px;
+  padding: 5px 0;
+  text-align: center;
+  width: 170px;
+  position: absolute;
+  background-color: #6baed6;
+  border: solid 5px #081d58;
+}
