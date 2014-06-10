@@ -14,30 +14,31 @@
 </style>
 <!--<script src="scripts/resources/calendar.js"></script>-->
 <div class="row">
-  <div class="thumbnail">
-      <div id='wimgraph'>
-      </div>
-  </div>
-</div>
-<div class="row">
 
     <div class="col-sm-12 col-lg-12 col-md-12">
+        <h2> Station ID : {{station}} </h2>
         <div class="thumbnail">
-            <!--
             <div id='wimgraph'>
             </div>
-            -->
+            <div id='calendar-controls' style='margin-left:10px;'>
+              <label>Class:
+              <select  class="form-control" ng-model="myClass" ng-options="item.id as item.label for item in values" style='width:75px;display:inline;margin-right:5px;'></select>
+              </label>
+              <label>Display:
+              <select  class="form-control2" ng-model="myDisp" ng-options="item2.id as item2.label for item2 in values2" style='width:75px;display:inline;margin-right:5px;'></select>
+              </label>
+                <button class='btn btn-info' type="button" ng-click="loadCalendar()">Apply</button>
+            </div>
             <div id="caldiv" class="ratings">
-                <p> Station ID : {{station}} </p>
-                <p>Station URL : {{url}}</p>
-                <select ng-model="myClass" ng-options="item.id as item.label for item in values">
-                </select>
-                <button type="button" ng-click="loadCalendar()">Recolor</button>
+               
+                
+                <div id="legend">
+                </div>
+            
             </div>
-
-            <div id="legend">
-            </div>
-
         </div>
+    </div>
+
+    <div class='volumeTotalGraph'>
     </div>
 </div>
