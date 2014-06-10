@@ -5,7 +5,8 @@
 
 	var _DATABASE = null;
 
-	var URLbase = 'http://localhost:1337/' //'http://api.availabs.org/wim/'
+	var URLbase = 'http://api.availabs.org/wim'
+	//var URLbase = 'http://localhost:1339';
 
 	wimXHR.get = function(url, callback) {
 		wimXHR.post(url, {database: _DATABASE}, callback);
