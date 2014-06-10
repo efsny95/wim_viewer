@@ -17,7 +17,12 @@ angular.module('wimViewerApp')
       { id: 12, label: '12' },
       { id: 13, label: '13' },
     ];
+    $scope.values2 = [
+      { id: "Weight", label: 'Weight' },
+      { id: "Count", label: 'Count' },
+    ];
   $scope.myClass = 0;
+  $scope.myDisp = "Count";
 
    var caldiv = d3.select("#caldiv");
    var m = {top: 10, right: 10, bottom: 25, left: 80},
@@ -25,7 +30,7 @@ angular.module('wimViewerApp')
       z = parseInt(w/54),
       h = parseInt(z*7);
       
-      console.log('dim',w,h,z,w + m.right + m.left + 100);
+      //console.log('dim',w,h,z,w + m.right + m.left + 100);
       var day = d3.time.format("%w"),
           week = d3.time.format("%U"),
           percent = d3.format(".1%"),
@@ -83,10 +88,11 @@ angular.module('wimViewerApp')
 
           $scope.stationData = [];
           $scope.myClass = $scope.values[0].id;
+          $scope.myDisp = $scope.values2[1].id;
           
           wimXHR.get('/stations/byStation/'+$scope.station, function(error, data) {
               $scope.stationData = data;
-              calCreate(rect,svg,$scope.myClass,data,day,week,percent,format,z,svg2)
+              calCreate(rect,svg,$scope.myClass,data,day,week,percent,format,z,svg2,"trucks")
           });
           
           // create graph object and draw a graph
@@ -94,19 +100,21 @@ angular.module('wimViewerApp')
           $scope.grapher.drawGraph($scope.station);
 
           $scope.loadCalendar = function(){
-            calCreate(rect,svg,$scope.myClass,$scope.stationData,day,week,percent,format,z,svg2)
+            calCreate(rect,svg,$scope.myClass,$scope.stationData,day,week,percent,format,z,svg2,$scope.myDisp)
           }
       });
 });
     //console.log($scope.myClass)
 
-  function calCreate(rect,svg,classT,data,day,week,percent,format,z,svg2){
-      wimCalendar.drawCalendar(rect,svg,parseData(data,classT),day,week,percent,format,z,svg2);
+  function calCreate(rect,svg,classT,data,day,week,percent,format,z,svg2,dispType){
+      wimCalendar.drawCalendar(rect,svg,parseData(data,classT),day,week,percent,format,z,svg2,dispType);
   };
 
 function parseData(input,classInfo){
 	var output = [];
+  var totalRows = 0
 	input.rows.forEach(function(row){
+    totalRows++
     if(classInfo == 0 || classInfo == row.f[4].v){
     		var item = {}
         var x = 0
@@ -132,6 +140,7 @@ function parseData(input,classInfo){
             for(var i = 0;i<output.length;i++){
               if(output[i].date == string){
                 output[i].numTrucks = parseInt(row.f[1].v) + parseInt(output[i].numTrucks)
+                output[i].totalWeight = parseInt(row.f[6].v) + parseInt(output[i].totalWeight)
                 x = 1
                 break
               }
@@ -139,6 +148,8 @@ function parseData(input,classInfo){
             if(x == 0){
               item.date = string;
               item.numTrucks = parseInt(row.f[1].v);
+              item.totalWeight = parseInt(row.f[6].v)
+              item.averageWeight = 0
               output.push(item);
             }
             x = 0 
@@ -146,6 +157,9 @@ function parseData(input,classInfo){
 
         
 	});
-  //console.log(output);
+  for(var i = 0;i<output.length;i++){
+    output[i].averageWeight = output[i].totalWeight / output[i].numTrucks
+  }
+ 
 	return output
 };

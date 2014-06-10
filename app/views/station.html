@@ -24,6 +24,9 @@
               <label>Class:
               <select  class="form-control" ng-model="myClass" ng-options="item.id as item.label for item in values" style='width:75px;display:inline;margin-right:5px;'></select>
               </label>
+              <label>Display:
+              <select  class="form-control2" ng-model="myDisp" ng-options="item2.id as item2.label for item2 in values2" style='width:75px;display:inline;margin-right:5px;'></select>
+              </label>
                 <button class='btn btn-info' type="button" ng-click="loadCalendar()">Apply</button>
             </div>
             <div id="caldiv" class="ratings">
