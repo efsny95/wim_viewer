@@ -9,7 +9,7 @@ var wimCalendar = {
 
   		var values = [];
 	    input_data.forEach(function(input){
-	    	values.push(+input.numTrucks);
+	    	values.push(+input.averageWeight);
 	    })
 
 	    var color = d3.scale.quantize()
@@ -42,7 +42,7 @@ var wimCalendar = {
 	      	if(typeof wimCalendar.legend != 'undefined'){
 	      		wimCalendar.legend.remove();
 	      	}
-	        var truckData = [Math.floor(color.invertExtent("#a50026")[0]) + " - " + Math.floor(color.invertExtent("#a50026")[1])+" Trucks",Math.floor(color.invertExtent("#d73027")[0]) + " - " + Math.floor(color.invertExtent("#d73027")[1])+" Trucks",Math.floor(color.invertExtent("#f46d43")[0]) + " - " + Math.floor(color.invertExtent("#f46d43")[1])+" Trucks",Math.floor(color.invertExtent("#fdae61")[0]) + " - " + Math.floor(color.invertExtent("#fdae61")[1])+" Trucks",Math.floor(color.invertExtent("#fee08b")[0]) + " - " + Math.floor(color.invertExtent("#fee08b")[1])+" Trucks",Math.floor(color.invertExtent("#ffffbf")[0]) + " - " + Math.floor(color.invertExtent("#ffffbf")[1])+" Trucks",Math.floor(color.invertExtent("#d9ef8b")[0]) + " - " + Math.floor(color.invertExtent("#d9ef8b")[1])+" Trucks",Math.floor(color.invertExtent("#a6d96a")[0]) + " - " + Math.floor(color.invertExtent("#a6d96a")[1])+" Trucks",Math.floor(color.invertExtent("#66bd63")[0]) + " - " + Math.floor(color.invertExtent("#66bd63")[1])+" Trucks",Math.floor(color.invertExtent("#1a9850")[0]) + " - " + Math.floor(color.invertExtent("#1a9850")[1])+" Trucks",Math.floor(color.invertExtent("#006837")[0]) + " - " + Math.floor(color.invertExtent("#006837")[1])+" Trucks"]
+	        var truckData = [Math.floor(color.invertExtent("#a50026")[0]) + " - " + Math.floor(color.invertExtent("#a50026")[1])+" Lbs",Math.floor(color.invertExtent("#d73027")[0]) + " - " + Math.floor(color.invertExtent("#d73027")[1])+" Lbs",Math.floor(color.invertExtent("#f46d43")[0]) + " - " + Math.floor(color.invertExtent("#f46d43")[1])+" Lbs",Math.floor(color.invertExtent("#fdae61")[0]) + " - " + Math.floor(color.invertExtent("#fdae61")[1])+" Lbs",Math.floor(color.invertExtent("#fee08b")[0]) + " - " + Math.floor(color.invertExtent("#fee08b")[1])+" Lbs",Math.floor(color.invertExtent("#ffffbf")[0]) + " - " + Math.floor(color.invertExtent("#ffffbf")[1])+" Lbs",Math.floor(color.invertExtent("#d9ef8b")[0]) + " - " + Math.floor(color.invertExtent("#d9ef8b")[1])+" Lbs",Math.floor(color.invertExtent("#a6d96a")[0]) + " - " + Math.floor(color.invertExtent("#a6d96a")[1])+" Lbs",Math.floor(color.invertExtent("#66bd63")[0]) + " - " + Math.floor(color.invertExtent("#66bd63")[1])+" Lbs",Math.floor(color.invertExtent("#1a9850")[0]) + " - " + Math.floor(color.invertExtent("#1a9850")[1])+" Lbs",Math.floor(color.invertExtent("#006837")[0]) + " - " + Math.floor(color.invertExtent("#006837")[1])+" Lbs"]
 	        //console.log(truckData)
 	        var color2 = d3.scale.ordinal()
     			.range(["#a50026", "#d73027", "#f46d43", "#fdae61", "#fee08b", "#ffffbf", "#d9ef8b","#a6d96a","#66bd63","#1a9850","#006837"]);
@@ -98,7 +98,7 @@ colorDays:function(svg,input_data,monthPath,rect,color){
 
     var data = d3.nest() 
         .key(function(d) { /*console.log(d,d.Open);*/ return d.date; }) //Creates key value
-        .rollup(function(d) { return +d[0].numTrucks; }) //create pair value
+        .rollup(function(d) { return +d[0].averageWeight; }) //create pair value
         .map(input_data); //Turns code into an array of objects
 
         //Below code colors in the calendar
