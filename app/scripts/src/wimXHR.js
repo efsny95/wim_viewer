@@ -20,9 +20,6 @@
 	// url should not contain a domain name, just a route
 	// data shoud be contained within a json
 	wimXHR.post = function(url, data, callback) {
-		if (/^\//.test(url)) {
-			url = url.slice(1);
-		}
 		data.database = _DATABASE;
 		_getXHR(_URLbase+url).post(JSON.stringify(data), function(error, data) {
 			if (typeof callback !== undefined)
