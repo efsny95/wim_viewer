@@ -46,7 +46,50 @@ footer {
 }
 #wimgraph {
   height: auto;
+  overflow: hidden;
 }
+#selectorDIV {
+  height: 50px;
+  margin: 20px;
+}
+.selector {
+  background-color: #000;
+  position: relative;
+  width: auto;
+  float: left;
+  padding-right: 5px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 12pt;
+}
+.selector a {
+  line-height:40px;
+  display: block;
+  float: left;
+  width: 200px;
+  height: 40px;
+  margin: 5px 0 5px 5px;
+  background-color: #0f0;
+  opacity: 0.75;
+  color: #000;
+  text-decoration: none;
+}
+.selector a:hover {
+  opacity: 1.0;
+}
+.selector a.active {
+  background-color: #1a9850;
+}
+.selector a.inactive {
+  background-color: #d73027;
+}
+.selector a.deactivated {
+  background-color: #666;
+}
+.selector a.deactivated:hover {
+  opacity: 0.75;
+}
+
 #graphDIV {
   height: 500px;
   background-color: #999;
@@ -69,7 +112,7 @@ footer {
   height: 40px;
   margin: 5px 5px 0 5px;
   text-decoration: none;
-  background-color: #88a;
+  background-color: #f46d43;
   opacity: 0.75;
   color: #000;
 }
@@ -138,6 +181,18 @@ footer {
   font-size: 24pt;
   display: none;
 }
+.graph-popup {
+  width: 250px;
+  height: 60px;
+  font-size: 12pt;
+  display: none;
+  line-height: 20px;
+  padding: 5px 10px 5px 10px;
+  text-align: left;
+  position: absolute;
+  background-color: #6baed6;
+  border: solid 5px #081d58;
+}
 
 #statesDIV {
   position: relative;
@@ -158,7 +213,7 @@ footer {
   fill: #fe9929;
 }
 
-.popup {
+.station-popup {
   font-size: 12pt;
   display: none;
   height: 40px;
