@@ -8,14 +8,14 @@
 		popup = null,
 		geoJSON = null,
 		centered = null,
-		$scope = null;
+		$scope = null,
+		clicked = false;
 
-	var width = 1000,
+	var width = null,
 		height = 600;
 
 	var projection = d3.geo.albersUsa()
-		.scale(1 << 10)
-		.translate([width/2, height/2]);
+		.scale(1 << 10);
 
 	var path = d3.geo.path()
 		.projection(projection);
@@ -37,7 +37,12 @@
 			})
 			.attr('class', 'state')
 			.attr('d', path)
-			.on('click', _clickZoom)
+			.on('click', function(d) {
+				if (!clicked) {
+					clicked = true;
+					_clickZoom(d);
+				}
+			})
 			.on('mouseover', function(d) {
 				if (typeof d.properties.stations !== 'undefined') {
 					d3.select(this).classed('state-hover', true);
@@ -55,6 +60,12 @@
 			}
 			var x, y, k;
 
+			var collection = {
+				type: 'FeatureCollection',
+				features: []
+			};
+			var	URL;
+
 			if (d && centered !== d) {
 			    var bounds = path.bounds(d);
 			    var wdth = bounds[1][0] - bounds[0][0];
@@ -71,14 +82,19 @@
 			}
 
 			if (centered) {
-				_getStationPoints(d);
+				URL = '/stations/stateGeo/';
+				_getStationPoints();
+
 				_getStationData(d);
 			} else {
 				d3.selectAll('.station').remove();
+
+				collection.features = [];
 			  		
 		  		$scope.$apply(function() {
 		  			$scope.stations = [];
 		  		});
+				clicked = false;
 			}
 
 			SVG.selectAll("path")
@@ -86,55 +102,52 @@
 
 			SVG.transition()
 			    .duration(750)
-			    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")");
-		}
 
-		function _getStationPoints(d) {
-			var URL = 'stations/stateGeo/';
+			    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")"+
+			    				    "scale(" + k + ")"+
+			    				    "translate(" + -x + "," + -y + ")");
 
-			wimXHR.get(URL + d.id, function(error, data) {
-            	if (error) {
-            		console.log(error);
-            		return;
-            	}
-            	console.log(data);
-            	_formatData(d, data);
-			})
-		}
+			function _getStationPoints() {
+				wimXHR.get(URL + d.id, function(error, data) {
+	            	if (error) {
+	            		console.log(error);
+	            		return;
+	            	}
+					_drawStationPoints(_formatData(d, data));
+					clicked = false;
+				})
+			}
 
-		function _formatData(stateData, stationData) {
-			var stations = {};
-			stationData.features.forEach(function(d) {
-				if (d.geometry.coordinates[0] != 0 && d.geometry.coordinates[1] != 0) {
-					stations[d.properties.station_id] = d.geometry;
+
+			function _formatData(stateData, stationData) {
+				var stations = {};
+				stationData.features.forEach(function(d) {
+					if (d.geometry.coordinates[0] != 0 && d.geometry.coordinates[1] != 0) {
+						stations[d.properties.station_id] = d.geometry;
+					}
+				});
+
+				//stateData.properties.stations.forEach(function(d) {
+				for (var i in stateData.properties.stations) {
+					var d = stateData.properties.stations[i];
+
+					var obj = {
+						type: 'Feature',
+						properties: {},
+						geometry: {}
+					};
+					obj.properties.stationID = d.stationID;
+					obj.properties.count = d.stationCount;
+					obj.properties.type = d.stationType;
+
+					if (d.stationID in stations) {
+						obj.geometry = stations[d.stationID];
+						collection.features.push(obj);
+					}
 				}
-			});
-
-			var collection = {
-				type: 'FeatureCollection',
-				features: []
-			};
-			var noGeoFor = [];
-			stateData.properties.stations.forEach(function(d) {
-				var obj = {
-					type: 'Feature',
-					properties: {},
-					geometry: {}
-				};
-				obj.properties.stationID = d.stationID;
-				obj.properties.count = d.stationCount;
-				if (d.stationID in stations) {
-					obj.geometry = stations[d.stationID];
-					collection.features.push(obj);
-				} else {
-					obj = {};
-					obj[d.stationID] = d.stationCount;
-					noGeoFor.push(obj);
-				}
-			})
-
-			_drawStationPoints(collection);
-		}
+				return collection;
+			}
+		} // end _clickZoom
 
 		function _drawStationPoints(collection) {
 			var stations = SVG.selectAll('circle')
@@ -147,7 +160,13 @@
 			stations.attr('class', 'station')
 				.attr('r', 1.5)
 				.attr('opacity', 0.66)
-				.attr('fill', '#081d58')
+				.attr('fill', function(d) {
+					if (d.properties.type == 'wim') {
+						return '#081d58';
+					} else {
+						return '#ff0000';
+					}
+				})
 				.attr('cx', function(d) {
 					return projection(d.geometry.coordinates)[0];
 				})
@@ -166,11 +185,16 @@
 				})
 				.on('mousemove', _popup)
 				.on('click', function(d) {
-					var URL = '#/station/';
-					open(URL + d.properties.stationID, '_self');
+					var URL = '#/station/' + 
+						d.properties.type + '/' +
+						d.properties.stationID;
+
+					open(URL, '_self');
 				})
 		}
-
+		// this function queries backend for all stations
+		// and then updates $scope.stations variable in
+		// order to draw list of stations below map
 		function _getStationData(stateData) {
 			var URL = 'stations/byState/';
 			var id = stateData.id.toString();
@@ -228,9 +252,12 @@
 			.style('display', 'block')
 			.html('<b>Station ID:</b> ' + d.properties.stationID)
 	}
-
+	// states is an array of state objects
 	wimstates.drawMap = function(id, states, $s) {
 		mapDIV = d3.select(id)
+
+		width = parseInt(mapDIV.style('width'));
+		projection.translate([width/2, height/2]);
 
 		SVG = mapDIV.append('svg')
 			.attr('id', 'mapSVG')
@@ -243,14 +270,16 @@
 
 		$scope = $s;
 
+		// states object
 		var obj = {};
 
 		var domain = [];
 
-		states.forEach(function(d) {
-			obj[d.state_fips] = {stations: d.stations, name: d.name}
-			domain.push(d.stations.length);
-		})
+		// load scope states data into states object
+		for (var i in states) {
+			obj[states[i].state_fips] = {stations: states[i].stations, name: states[i].name}
+			domain.push(states[i].stations.length);
+		}
 		colorScale.domain(d3.extent(domain));
 
 		d3.json('./us-states-10m.json', function(error, states) {
@@ -259,14 +288,14 @@
 
 			var props;
 			geoJSON.features.forEach(function(d) {
-
+				// pad single digit FIPS with a 0 for compatibility
 				if (d.id.toString().match(/^\d$/)) {
 					d.id = '0' + d.id;
 				}
+				d.properties.fips = d.id.toString();
 				if (d.id in obj) {
-					d.properties.fips = d.id.toString();
-					d.properties.name = obj[d.id].name;
 					d.properties.stations = obj[d.id].stations;
+					d.properties.name = obj[d.id].name;
 				}
 			})
 

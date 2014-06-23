@@ -1,11 +1,12 @@
 //Quick sort thanks to: http://en.literateprograms.org/Quicksort_(JavaScript)
 
 
-Array.prototype.swap=function(a, b)
+ function swap(a, b,c)
 		{
-			var tmp=this[a];
-			this[a]=this[b];
-			this[b]=tmp;
+			var tmp=c[a];
+			c[a]=c[b];
+			c[b]=tmp;
+			return c
 		}
 
 var barGraph ={
@@ -70,7 +71,6 @@ var barGraph ={
 			rect.remove();
 			rect =svg.selectAll("rect")
 		  		.data(graphData);
-		console.log(graphData)
 		rect.enter().append("rect")
 		  	.attr("class","enter")
 		  	.attr("x", function(d,i) { return x(graphData[i].stationId); })
@@ -78,7 +78,7 @@ var barGraph ={
 		  	.attr("y", function(d,i) { return y(totalAADT(graphData[i].years)); })
 		  	.attr("style", function(d,i) { return  "fill:"+color(totalAADT(graphData[i].years))+";"; })
 		  	.attr("height", function(d,i) { return height - y(totalAADT(graphData[i].years)); })
-		  	.on("click",function(d,i) { window.location ="#/station/"+ graphData[i].stationId; })
+		  	.on("click",function(d,i) { window.location ="#/station/wim/"+ graphData[i].stationId; })
 		  	.on("mouseover",function(d,i) {$("#stationInfo").append("<p class="+graphData[i].stationId+">Station: "+graphData[i].stationId+"<br> Number of years of data: "+graphData[i].years.length+" <br>ACompleteness: "+totalAADT(graphData[i].years,"percent")+" <br>AAADT: "+totalAADT(graphData[i].years)+"</p>");})
 		  	.on("mouseout",function(d,i) {$("."+graphData[i].stationId).remove();});
 		
@@ -102,16 +102,16 @@ var barGraph ={
 		function partition(array, begin, end, pivot)
 		{
 			var piv=totalAADT(array[pivot].years);
-			array.swap(pivot, end-1);
+			array = swap(pivot, end-1,array);
 			var store=begin;
 			var ix;
 			for(ix=begin; ix<end-1; ++ix) {
 				if(totalAADT(array[ix].years)<=piv) {
-					array.swap(store, ix);
+					array = swap(store, ix,array);
 					++store;
 				}
 			}
-			array.swap(end-1, store);
+			array = swap(end-1, store,array);
 
 			return store;
 		}
