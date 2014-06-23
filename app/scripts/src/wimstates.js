@@ -97,6 +97,7 @@
             		console.log(error);
             		return;
             	}
+            	console.log(data);
             	_formatData(d, data);
 			})
 		}
@@ -235,7 +236,7 @@
 			.append('g');
 
 		popup = mapDIV.append('div')
-			.attr('class', 'popup')
+			.attr('class', 'station-popup')
 
 		$scope = $s;
 

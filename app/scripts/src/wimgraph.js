@@ -16,8 +16,9 @@
 		// in non-reduced format and contains objects with data for
 		// truck weight, truck class, and the amount of trucks
 			formattedData = [],
+			weightDistributionData = {},
 			stationID,			// current station being viewed
-			clicked = false,	// used to keep track of when users click on graph
+			clicked = true,	// used to keep track of when users click on graph
 
 		// URL to retrieve graph data from
 			route = '/stations/graphData/',
@@ -44,6 +45,61 @@
 		// this is used to keep track of which attribute to reduce
 			reduceBy = (groupBy === 'class' ? 'weight' : 'class');
 
+		// create selector buttons
+		var selectorDIV = d3.select(id).append('div')
+				.attr('id', 'selectorDIV')
+				.append('div')
+				.attr('class', 'selector'),
+
+			classWeightButton = selectorDIV.append('a')
+				.text('Classes & Weights')
+				.classed('active', true)
+				.on('click', function() {
+					if (!clicked && d3.select(this).classed('inactive')) {
+						_selectorToggle()
+					}
+				}),
+
+			weightDistButton = selectorDIV.append('a')
+				.text('Weight Distribution')
+				.classed('inactive', true)
+				.on('click', function() {
+					if (!clicked && d3.select(this).classed('inactive')) {
+						_selectorToggle()
+					}
+				});
+
+		function _selectorToggle(button) {
+			var toggleOn = button || (classWeightButton.classed('inactive') ? classWeightButton : weightDistButton),
+				toggleOff = (toggleOn === classWeightButton ? weightDistButton : classWeightButton);
+
+			toggleOn.classed('active', true)
+				.classed('inactive', false);
+
+			toggleOff.classed('active', false)
+				.classed('inactive', true);
+
+			if (classWeightButton.classed('active')) {
+				_toggleSVG(cwSVG);
+			} else {
+				_toggleSVG(wdSVG);
+			}
+		}
+
+		function _toggleSVG(svg) {
+			var hide = (svg === cwSVG ? wdSVG : cwSVG);
+
+			svg.style('display', 'block');
+
+			hide.style('display', 'none');
+
+			var cwSVGdisplay = cwSVG.style('display');
+
+			navBar.style('display', cwSVGdisplay);
+			togglesDiv.style('display', cwSVGdisplay);
+			//legendDIV.style('display', cwSVGdisplay);
+		}
+
 		// initialize graph div
 		var graphDIV = d3.select(id).append('div')
 			.attr('id', 'graphDIV'),
@@ -56,19 +112,67 @@
 
 			wdth = width - margin.left - margin.right,
 		    hght = height - margin.top - margin.bottom,
-		// initialize SVG
-			SVG = graphDIV.append('svg')
+
+		// create popup div
+			popup = d3.select(id).append('div')
+				.attr('class', 'graph-popup');
+
+		function _showPopup(json, DOMel) {
+			var xPos, yPos;
+
+			if ("offsetX" in d3.event) {
+			    xPos = d3.event.offsetX - DOMel.clientLeft;
+			    yPos = d3.event.offsetY - DOMel.clientTop;
+			} else {
+			    xPos = d3.event.layerX - DOMel.clientLeft;
+			    yPos = d3.event.layerY - DOMel.clientTop;
+			}
+
+			var html = '';
+			for (var key in json) {
+				html += '<b>'+key+'</b>: '+json[key]+'<br>';
+			}
+			html = html.replace(/<br>$/i, '');
+
+			popup.style('left', xPos + 'px')
+				.style('top', yPos + 'px')
+				.style('display', 'block')
+				.html(html)
+		}
+		function _movePopup(DOMel) {
+			var xPos, yPos;
+
+			if ("offsetX" in d3.event) {
+			    xPos = d3.event.offsetX - DOMel.clientLeft;
+			    yPos = d3.event.offsetY - DOMel.clientTop;
+			} else {
+			    xPos = d3.event.layerX - DOMel.clientLeft;
+			    yPos = d3.event.layerY - DOMel.clientTop;
+			}
+
+			popup.style('left', xPos + 'px')
+				.style('top', yPos + 'px')
+		}
+		function _hidePopup() {
+			popup.style('display', 'none')
+		}
+
+		// initialize class and weight SVG
+		var	cwSVG = graphDIV.append('svg')
 				.attr('width', width + 'px')
 				.attr('height', height + 'px'),
-		// create graph SVG group
-			graphSVG = SVG.append('g')
+		// create cwSVG group. this is used to draw class/weight bars
+			cwGraphSVG = cwSVG.append('g')
 				.attr("transform", "translate("+margin.left+", "+margin.top+")"),
-		// initialize nav bar div
-			navBar = graphDIV.append('div')
-				.attr('class', 'navBar')
-				.style('right', margin.right +'px')
-				.style('top', margin.top+'px')
-				.style('width', navBarWidth+'px');
+
+		// initialize weight distribution SVG
+			wdSVG = graphDIV.append('svg')
+				.attr('width', width + 'px')
+				.attr('height', height + 'px')
+				.style('display', 'none'),
+			wdGraphSVG = wdSVG.append('g')
+				.attr("transform", "translate("+margin.left+", "+margin.top+")");
+
 	    // initialize x scale and axis
 	    var Xscale = d3.scale.ordinal()
 	    	.rangePoints([0, wdth]);
@@ -77,9 +181,22 @@
 	    		.scale(Xscale)
 	    		.orient('bottom');
 
-	    graphSVG.append('g')
+	    cwGraphSVG.append('g')
 	    	.attr('class', 'x-axis')
 	        .attr('transform', 'translate(0, '+(height - margin.top - margin.bottom)+')');
+
+	    // initialize x scale and axis
+	    var wdXscale = d3.scale.ordinal()
+	    	.rangePoints([0, wdth]);
+
+	    var wdXaxis = d3.svg.axis()
+	    		.scale(wdXscale)
+	    		.orient('bottom');
+
+	    wdGraphSVG.append('g')
+	    	.attr('class', 'x-axis')
+	        .attr('transform', 'translate(0, '+(height - margin.top - margin.bottom)+')');
+
 	    // initialize y scale and axis
 	   	var Yscale = d3.scale.linear()
 	   		.rangeRound([hght, 0])
@@ -89,8 +206,18 @@
 	    		.scale(Yscale)
 	    		.orient('left');
 
-	    graphSVG.append('g')
+	    cwGraphSVG.append('g')
+	    	.attr('class', 'y-axis'),
+
+	    wdGraphSVG.append('g')
 	    	.attr('class', 'y-axis');
+
+		// initialize nav bar div
+			navBar = graphDIV.append('div')
+				.attr('class', 'navBar')
+				.style('right', margin.right +'px')
+				.style('top', margin.top+'px')
+				.style('width', navBarWidth+'px');
 
 	    // create weight and class toggle buttons
 	    var togglesDiv = graphDIV.append('div')
@@ -118,7 +245,8 @@
 				return groupBy === 'weight';
 			})
 			.on('click', _toggle)
-		// function to control toggles
+
+		// function to control weight and class toggles
 		function _toggle() {
 			var self = d3.select(this),
 				active = self.classed('active');
@@ -142,21 +270,47 @@
 		// this scales maps classes to array index
 		var classScale = d3.scale.ordinal()
 			.domain([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
-			.range([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]),
+			.range([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
 
 		// this scale maps weights to weight scales
 		// weight class 0 corressponds to weights [0, 20,000),
 		// weight class 1 corresponds to weights [20,000, 40,000)
 		// ...
 		// weight class 6 corresponds to weights 120,000 and above
-			weightScale = d3.scale.quantize()
-			.domain([0, 140000])
-			.range([0, 1, 2, 3, 4, 5, 6]),
+		var bandSize = 20000,
+			maxWeight = 120000,
+			numBands = (maxWeight+bandSize) / bandSize;
 
-			_CONVERT = 220.462;
+		var range = [];
+
+		for (var i = 0; i < numBands; i++) {
+			range.push(i);
+		}
+
+		var	weightScale = d3.scale.quantize()
+			.domain([0, maxWeight+bandSize])
+			.range(range),
+
+			_CONVERT = 220.462;  // multiplier to convert tenths of metric tons to pounds
+
+		var WDbandSize = 1000;
+			WDmaxWeight = 140000;
+			WDnumBands = (WDmaxWeight+WDbandSize) / WDbandSize,
+			WDrange = [];
+
+		var wd2weight = bandSize / WDbandSize;
+
+		for (var i = 0; i < WDnumBands; i++) {
+			WDrange.push(i);
+		}
+
+		// initialize weight distribution scale
+		var wdScale = d3.scale.quantize()
+			.domain([0, WDmaxWeight+WDbandSize])
+			.range(WDrange);
 
 		// used to color class and weight legends
-		var _COLORS = {
+		var _LEGEND_COLORS = {
 			class: ["#08306b", "#08519c", "#2171b5", "#4292c6", "#6baed6", "#9ecae1","#ddffff","#a1d99b","#74c476","#41ab5d","#238b45","#006d2c","#00441b"],
 			weight: ["#fee6ce","#fdd0a2","#fdae6b","#fd8d3c","#f16913","#d94801","#a63603"]
 		}
@@ -166,32 +320,8 @@
 			class: [false,false,false,false,false,false,false,false,false,false,false,false,false],
 		// data filters for the weight classes
 		// indexes [0, 6] directly correspond to weight classes [0, 6]
-			weight: [false,false,false,false,false,false,false]
+			weight: [false,false,false,false,false,false,false],
 		}
-		var classFilter = [
-			false,
-			false,
-			false,
-			false,
-			false,
-			false,
-			false,
-			false,
-			false,
-			false,
-			false,
-			false,
-			false
-		]
-		var weightFilter = [
-			false,
-			false,
-			false,
-			false,
-			false,
-			false,
-			false,
-		]
 
 		// create legends
 		var legendDIV = d3.select(id).append('div')
@@ -225,11 +355,12 @@
 						self.style('background', null)
 					} else {
 						self.style('background', function(d) {
-							return _COLORS[attr][d];
+							return _LEGEND_COLORS[attr][d];
 						})
 					}
 
-					_drawGraph()
+					_drawGraph();
+					_drawWDGraph();
 				})
 				.on('mouseover', function(d) {
 					d3.selectAll('.'+attr + d)
@@ -239,7 +370,7 @@
 				.on('mouseout', function(d) {
 					d3.selectAll('.'+attr + d)
 						.style('opacity', 0.75)
-						.attr('fill', function() { return _COLORS[attr][d]; })
+						.attr('fill', function() { return _LEGEND_COLORS[attr][d]; })
 				});
 
 			labels.classed('inactive', function(d) {
@@ -249,7 +380,7 @@
 					if (d3.select(this).classed('inactive')) {
 						return null;
 					}
-					return _COLORS[attr][d];
+					return _LEGEND_COLORS[attr][d];
 				})
 				.text(function(d, i) {
 					var text;
@@ -280,7 +411,7 @@
 		// this function retrieves the requested data from the back end API
 		function _getData() {
 			loader.style('display', 'inline')
-			
+
             wimXHR.post(route+stationID, {'depth': depth}, function(error, data) {
             	if (error) {
             		console.log(error);
@@ -288,83 +419,89 @@
             	}
             	time = TIMES[depth.length];
 
-            	formattedData = _formatData(data);
+            	_formatData(data);
 
             	_drawGraph();
+            	_drawWDGraph();
             });
 		}
+		// variable to keep track of class types present in current data set
 		var classValues = [];
+		// variable to keep track of weight classes in current data set
 		var weightValues = [];
 
 		// this function formats the data returned from Google big query
-		// into a more usable form. The result is returned and is stored
-		// in the formattedData private variable
+		// into a more usable form.
 		function _formatData(data) {
 			classValues = [];
 			weightValues = [];
 
+			// array index for time data
+			var timeIndex = 0;
+
+			// get the names of attributes
 			var schema = [];
 			for (var i in data.schema.fields) {
 				schema.push(data.schema.fields[i].name)
 			}
-			var formatted = [];
+			// clear data arrays
+			formattedData = [];
+			_clearWeightDistributionData();
 
-			var obj = {};
-			obj[time] = +data.rows[0].f[0].v;
-			var cur = +data.rows[0].f[0].v;
-			obj.data = [];
+			// initialize variables
+			var obj = null,
+				currentTimeIndex = null,
+				i = 0;
 
-			var dataObj = {};
-
-			for (var i = 1; i < schema.length; i++) {
-				dataObj[schema[i]] = +data.rows[0].f[i].v;
-			}
-			dataObj.class = classScale(dataObj.class);
-			_pushUnique(classValues, dataObj.class);
-			dataObj.weight = weightScale(dataObj.weight*_CONVERT);
-			_pushUnique(weightValues, dataObj.weight);
-
-			obj.data.push(dataObj);
-			formatted.push(obj);
-
-			for (var i = 1; i < data.rows.length; i++) {
-				if (+data.rows[i].f[0].v === cur) {
+			while (i < data.rows.length) {
+				if (+data.rows[i].f[timeIndex].v === currentTimeIndex) {
+					// create a new data object for current time index
 					dataObj = {};
 					for (var j = 1; j < schema.length; j++) {
 						dataObj[schema[j]] = +data.rows[i].f[j].v;
 					}
+
+					_populateWeightDistributionData(dataObj);
+
 					dataObj.class = classScale(dataObj.class);
 					_pushUnique(classValues, dataObj.class);
 					dataObj.weight = weightScale(dataObj.weight*_CONVERT);
 					_pushUnique(weightValues, dataObj.weight);
 
 					obj.data.push(dataObj);
+
+					i++;
 				} else {
-
+					// create new time index object
 					obj = {};
-					obj[time] = +data.rows[i].f[0].v;
-					cur = +data.rows[i].f[0].v;
+					obj[time] = +data.rows[i].f[timeIndex].v;
+					currentTimeIndex = +data.rows[i].f[timeIndex].v;
 					obj.data = [];
-
-					dataObj = {};
-
-					for (var j = 1; j < schema.length; j++) {
-						dataObj[schema[j]] = +data.rows[i].f[j].v;
-					}
-					dataObj.class = classScale(dataObj.class);
-					_pushUnique(classValues, dataObj.class);
-					dataObj.weight = weightScale(dataObj.weight*_CONVERT);
-					_pushUnique(weightValues, dataObj.weight);
-
-					obj.data.push(dataObj);
-					formatted.push(obj);
+					formattedData.push(obj);
 				}
 			}
 
 			_createLegendLabels(classLegend, classValues, 'class')
 			_createLegendLabels(weightLegend, weightValues, 'weight')
 
-			return formatted;
+			function _clearWeightDistributionData() {
+				for (var i in wdScale.range()) {
+					weightDistributionData[i] = _newWDobj();
+				}
+			}
+			function _newWDobj() {
+				var obj = {};
+				for (var i in classScale.range()) {
+					obj[i] = 0;
+				}
+				return obj;
+			}
+			function _populateWeightDistributionData(data) {
+				var index = wdScale(data.weight*_CONVERT),
+					cls = classScale(data.class);
+
+				weightDistributionData[index][cls] += data.amount;
+			}
 
 			function _pushUnique(list, value) {
 				if (list.indexOf(value) === -1) {
@@ -380,6 +517,113 @@
 			return data.sort(function(a, b) {
 				return order*(a[attr] - b[attr]);
 			})
+		}
+
+		function _WD2Weight(i) {
+			var maxIndex = d3.max(weightScale.range());
+
+			return index = Math.min(Math.floor(i / (bandSize/WDbandSize)), maxIndex)
+		}
+		function _filterWeightDistributionData() {
+			filtered = [];
+
+			var obj = null,
+				current = null;
+
+			for (var i in weightDistributionData) {
+				current = weightDistributionData[i];
+
+				obj = {};
+				obj.weight = i;
+				obj.amount = 0;
+				obj.extent = wdScale.invertExtent(+i);
+
+				if (_FILTERS.weight[_WD2Weight(i)])
+					continue;
+
+				filtered.push(obj);
+
+				for (var j in current) {
+					if (!_FILTERS.class[j]) {
+						obj.amount += current[j];
+					}
+				}
+			}
+
+			return filtered;
+		}
+		function _drawWDGraph() {
+			var data = _sortBy(_filterWeightDistributionData(), 'weight'),
+				Ymax = d3.max(data, function(d) {return d.amount; });
+
+		   	var barWidth = Math.min((wdth-(data.length+1)*2) / data.length, 75),
+		   		space = wdth - (barWidth * data.length),
+		   		gap = space / (data.length+1);
+
+		   	var padding = (2*gap + barWidth) / (gap + barWidth);
+
+		    wdXscale.domain(wdScale.range())
+		    	.rangePoints([0, wdth], padding);
+
+		   	Yscale.domain([0, Ymax]);
+
+		   	var bars = wdGraphSVG.selectAll('rect').data(data);
+
+		   	bars.enter().append('rect')
+		   		.attr('y', hght)
+		   		.attr('x', function(d, i) { return (i*(barWidth + gap) + gap); })
+		    	.attr('height', 0)
+				.style('opacity', 0.75)
+		        .attr('fill', function(d) {
+		        	return _LEGEND_COLORS.weight[_WD2Weight(d.weight)];
+		        })
+		        .on('mouseover', function(d) {
+		        	d3.select(this).attr('fill', '#d73027');
+		        	
+		        	var formatter = d3.format('<,'),
+		        		json = {
+		        			Amount: formatter(d.amount),
+		        		};
+		        	if (d.extent[0] === WDmaxWeight) {
+		        		json.Extent = formatter(d.extent[0])+'+';
+		        	} else {
+		        		json.Extent = formatter(d.extent[0])+'-'+formatter(d.extent[1]);
+		        	}
+		        	_showPopup(json, this);
+		        })
+		        .on('mousemove', function() { _movePopup(this); })
+		        .on('mouseout', function(d) {
+		        	d3.select(this).attr('fill', function(d) {
+		        		return _LEGEND_COLORS.weight[_WD2Weight(d.weight)];
+		        	})
+		        	_hidePopup();
+		        });
+
+		   	bars.transition()
+		   		.duration(500)
+		   		.attr('class', null)
+		   		.attr('class', function(d) {
+		   			return 'weight'+_WD2Weight(d.weight);
+		   		})
+		   		.attr('y', function(d) { return Yscale(d.amount); })
+		   		.attr('x', function(d, i) { return (i*(barWidth + gap) + gap); })
+		    	.attr('height', function(d) { return hght - Yscale(d.amount); })
+		        .attr('width', barWidth)
+		        .attr('fill', function(d) {
+		        	return _LEGEND_COLORS.weight[_WD2Weight(d.weight)];
+		        });
+
+		   	bars.exit()
+		   		.transition()
+		   		.duration(500)
+		   		.attr('y', hght)
+		    	.attr('height', 0)
+				.attr('fill', '#f00')
+		   		.remove();
+
+		    //wdGraphSVG.select('.x-axis').call(wdXaxis)
+		    wdGraphSVG.select('.y-axis').call(Yaxis);
+
 		}
 		// reduces formatted data, eliminating attr and grouping by keeper.
 		// this function also keeps track of min and max time values, max
@@ -440,6 +684,10 @@
 						
 					reducedData.push(obj);
 
+					if (keeper == 'weight') {
+						obj.extent = weightScale.invertExtent(data[i][keeper]);
+					}
+
 					cur = data[i][keeper];
 
 					obj.amount = data[i].amount;
@@ -456,8 +704,8 @@
 		function _drawGraph() {
 			var dataObj = _reduceData(reduceBy, groupBy),
 				data = dataObj.data,
-				Xmin = dataObj.Xmin,
-				Xmax = dataObj.Xmax,
+				//Xmin = dataObj.Xmin,
+				//Xmax = dataObj.Xmax,
 				Ymax = dataObj.Ymax,
 				ticks = dataObj.ticks;
 
@@ -472,7 +720,7 @@
 
 		   	Yscale.domain([0, Ymax]);
 
-			var stacks = graphSVG.selectAll('.stack')
+			var stacks = cwGraphSVG.selectAll('.stack')
 				.data(data);
 
 			stacks.transition()
@@ -527,14 +775,39 @@
 				.attr('height', 0)
 				.attr('stroke-width', 0)
 				.style('opacity', 0.75)
-		        .attr('fill', function(d) { return _COLORS[groupBy][d[groupBy]]; })
+		        .attr('fill', function(d) { return _LEGEND_COLORS[groupBy][d[groupBy]]; })
+		        .on('mouseover', function(d) {
+		        	d3.select(this).attr('fill', '#d73027');
+
+		        	var formatter = d3.format('<,'),
+		        		json = {
+		        			Amount: formatter(d.amount),
+		        		};
+		        	if ('class' in d) {
+		        		json.Class = d.class;
+		        	} else {
+			        	if (d.extent[0] === maxWeight) {
+			        		json.Extent = formatter(d.extent[0])+'+';
+			        	} else {
+			        		json.Extent = formatter(d.extent[0])+'-'+formatter(d.extent[1]);
+			        	}
+		        	}
+		        	_showPopup(json, this);
+		        })
+		        .on('mousemove', function() { _movePopup(this); })
+		        .on('mouseout', function(d) {
+		        	d3.select(this).attr('fill', function(d) {
+		        		return _LEGEND_COLORS[groupBy][d[groupBy]];
+		        	})
+		        	_hidePopup();
+		        });
 
 		    bars.transition()
 		    	.duration(500)
 		    	.attr('y', function(d) { return Yscale(d.amount)-d.float; })
 		    	.attr('height', function(d) { return hght - Yscale(d.amount); })
 		        .attr('width', barWidth)
-		        .attr('fill', function(d) { return _COLORS[groupBy][d[groupBy]]; })
+		        .attr('fill', function(d) { return _LEGEND_COLORS[groupBy][d[groupBy]]; })
 		        .attr('class', null)
 		        .attr('class', function(d) { return groupBy+d[groupBy]; });
 
@@ -548,10 +821,10 @@
 
 		    Xaxis.tickValues(ticks);
 
-		    var t = graphSVG.transition().duration(500);
+		    var transition = cwGraphSVG.transition().duration(500);
 
-		    t.select('.x-axis').call(Xaxis)
-		    t.select('.y-axis').call(Yaxis);
+		    transition.select('.x-axis').call(Xaxis)
+		    transition.select('.y-axis').call(Yaxis);
 
 		    _drawNavigator();
 
@@ -571,17 +844,24 @@
 		    	return data;
 		    }
 		}
-
+		_NAV_COLORS = {
+			class: ["#2171b5", "#6baed6", "#bdd7e7", "#eff3ff"],
+			weight: ["#d94701","#fd8d3c","#fdbe85","#feedde"]
+		}
+		var navButtons;
 		function _drawNavigator() {
-			var buttons = navBar.selectAll('a')
+			navButtons = navBar.selectAll('a')
 				.data(depth);
 
-			buttons.enter().append('a');
-
-			buttons.exit().remove();
-
-			buttons.text(_getNavBarText)
+			navButtons.enter().append('a')
+				.text(_getNavBarText)
 				.on('click', _clicked);
+
+			navButtons.exit().remove();
+
+			navButtons.style('background-color', function(d, i) {
+					return _NAV_COLORS[groupBy][i];
+				});
 		}
 		var _MONTHS = {
 			1: 'Jan.',
