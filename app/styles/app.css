@@ -125,6 +125,12 @@ footer {
 .navBar a.inactive {
   background-color: #d73027;
 }
+.navBar a.deactivated {
+  background-color: #666;
+}
+.navBar a.deactivated:hover {
+  opacity: 0.75;
+}
 #legendDIV {
   margin: 20px;
   position: relative;

@@ -17,7 +17,7 @@ angular
         templateUrl: 'views/state.html',
         controller: 'StateCtrl'
       })
-      .when('/station/:stationId', {
+      .when('/station/:stationType/:stationId', {
         templateUrl: 'views/station.html',
         controller: 'StationCtrl'
       })
