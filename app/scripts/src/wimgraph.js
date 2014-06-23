@@ -427,7 +427,6 @@
 		}
 
 		function _formatClassData(data) {
-			console.log(data);
 			// variable to keep track of class types present in current data set
 			var classValues = [],
 			// variable to keep track of weight classes in current data set
@@ -691,7 +690,6 @@
 					data.Xmin = obj[time];
 				}
 				data.ticks.push(obj[time]);
-
 				objData = _reduce(formattedData[i].data, attr, keeper)
 				obj.data = objData.data;
 				data.Ymax = (objData.total > data.Ymax ? objData.total : data.Ymax);
