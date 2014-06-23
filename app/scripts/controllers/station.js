@@ -33,7 +33,7 @@ angular.module('wimViewerApp')
        $scope.maxYear = ""
        $scope.drawVars = []
 
-      var URL = '/stations/byStation';
+      var URL = 'stations/byStation';
 
       wimXHR.get(URL, function(error, data) {
           $scope.minYear = data.rows[0].f[0].v
@@ -45,15 +45,15 @@ angular.module('wimViewerApp')
           $scope.myDisp = $scope.values2[1].id;
           $scope.myDataDisp = $scope.values3[0].id;
 
-          wimXHR.get('/stations/byStation/state/info/'+$scope.station, function(error, data) {
+          wimXHR.get('stations/byStation/state/info/'+$scope.station, function(error, data) {
                 wimTable.drawTable(data)
                 
-                wimXHR.get('/stations/byStation/class/'+$scope.station, function(error, data) {
+                wimXHR.get('stations/byStation/class/'+$scope.station, function(error, data) {
                   $scope.stationDataAll = data;
                 });
           });
 
-          wimXHR.get('/stations/byStation/'+$scope.station, function(error, data) {
+          wimXHR.get('stations/byStation/'+$scope.station, function(error, data) {
               $scope.stationData = data;
               calCreate($scope.drawVars[5],$scope.drawVars[3],$scope.myClass,$scope.drawVars[1],$scope.drawVars[2],data,$scope.drawVars[0],$scope.drawVars[4],"trucks","Freight")
           });

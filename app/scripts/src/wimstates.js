@@ -90,13 +90,14 @@
 		}
 
 		function _getStationPoints(d) {
-			var URL = '/stations/stateGeo/';
+			var URL = 'stations/stateGeo/';
 
 			wimXHR.get(URL + d.id, function(error, data) {
             	if (error) {
             		console.log(error);
             		return;
             	}
+            	console.log(data);
             	_formatData(d, data);
 			})
 		}
@@ -171,7 +172,7 @@
 		}
 
 		function _getStationData(stateData) {
-			var URL = '/stations/byState/';
+			var URL = 'stations/byState/';
 			var id = stateData.id.toString();
 
 			var regex = /^\d$/;
@@ -238,7 +239,7 @@
 			.append('g');
 
 		popup = mapDIV.append('div')
-			.attr('class', 'popup')
+			.attr('class', 'station-popup')
 
 		$scope = $s;
 
