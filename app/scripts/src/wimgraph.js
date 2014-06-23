@@ -5,8 +5,9 @@
 
 	function _WIMGrapher(id) {
 		var self = this,
-		// data retrieved from backend and formatted
-		// the data is kept as an array of objects. Each object
+
+		// Stores data retrieved from backend after being formatted.
+		// The data is kept as an array of objects. Each object
 		// corresponds to a time and contains another array
 		// of all data for that time. Each object has two keys:
 		// the first is the time scale with a time value
@@ -18,10 +19,12 @@
 			formattedData = [],
 			weightDistributionData = {},
 			stationID,			// current station being viewed
-			clicked = true,	// used to keep track of when users click on graph
+			stationType,		// type of current station
+			clicked = true,		// used to keep track of when users click on graph
 
-		// URL to retrieve graph data from
-			route = '/stations/graphData/',
+			_formatData,
+		
+			route,	// URL to retrieve graph data from
 
 		// depth is an array object that is treated as a stack.
 		// as users delve deeper into graph times, the year, month, or
@@ -54,35 +57,31 @@
 			classWeightButton = selectorDIV.append('a')
 				.text('Classes & Weights')
 				.classed('active', true)
-				.on('click', function() {
-					if (!clicked && d3.select(this).classed('inactive')) {
-						_selectorToggle()
-					}
-				}),
+				.on('click', _selectorToggle),
 
 			weightDistButton = selectorDIV.append('a')
 				.text('Weight Distribution')
 				.classed('inactive', true)
-				.on('click', function() {
-					if (!clicked && d3.select(this).classed('inactive')) {
-						_selectorToggle()
-					}
-				});
+				.on('click', _selectorToggle);
 
-		function _selectorToggle(button) {
-			var toggleOn = button || (classWeightButton.classed('inactive') ? classWeightButton : weightDistButton),
-				toggleOff = (toggleOn === classWeightButton ? weightDistButton : classWeightButton);
+		function _selectorToggle() {
+			var self = d3.select(this),
+				active = self.classed('active'),
+				deactivated = self.classed('deactivated');
 
-			toggleOn.classed('active', true)
-				.classed('inactive', false);
+			if (!active && !clicked && !deactivated) {
 
-			toggleOff.classed('active', false)
-				.classed('inactive', true);
+				selectorDIV.selectAll('a')
+					.classed('active', false)
+					.classed('inactive', true)
+				self.classed('active', true)
+					.classed('inactive', false)
 
-			if (classWeightButton.classed('active')) {
-				_toggleSVG(cwSVG);
-			} else {
-				_toggleSVG(wdSVG);
+				if (classWeightButton.classed('active')) {
+					_toggleSVG(cwSVG);
+				} else {
+					_toggleSVG(wdSVG);
+				}
 			}
 		}
 
@@ -226,7 +225,7 @@
 			.style('bottom', margin.top+'px')
 			.style('width', navBarWidth+'px');
 
-		togglesDiv.append('a')
+		var classToggle = togglesDiv.append('a')
 			.text('Class')
 			.classed('inactive', function() {
 				return reduceBy === 'class';
@@ -236,7 +235,7 @@
 			})
 			.on('click', _toggle)
 
-		togglesDiv.append('a')
+		var weightToggle = togglesDiv.append('a')
 			.text('Weight')
 			.classed('inactive', function() {
 				return reduceBy === 'weight';
@@ -249,9 +248,10 @@
 		// function to control weight and class toggles
 		function _toggle() {
 			var self = d3.select(this),
-				active = self.classed('active');
+				active = self.classed('active'),
+				deactivated = self.classed('deactivated');
 
-			if (!active && !clicked) {
+			if (!active && !clicked && !deactivated) {
 				clicked = true;
 
 				togglesDiv.selectAll('a')
@@ -269,7 +269,7 @@
 
 		// this scales maps classes to array index
 		var classScale = d3.scale.ordinal()
-			.domain([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
+			.domain([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])
 			.range([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
 
 		// this scale maps weights to weight scales
@@ -422,25 +422,66 @@
             	_formatData(data);
 
             	_drawGraph();
-            	_drawWDGraph();
+	            _drawWDGraph();
             });
 		}
-		// variable to keep track of class types present in current data set
-		var classValues = [];
-		// variable to keep track of weight classes in current data set
-		var weightValues = [];
 
-		// this function formats the data returned from Google big query
-		// into a more usable form.
-		function _formatData(data) {
-			classValues = [];
-			weightValues = [];
+		function _formatClassData(data) {
+			console.log(data);
+			// variable to keep track of class types present in current data set
+			var classValues = [],
+			// variable to keep track of weight classes in current data set
+				weightValues = [],
 
 			// array index for time data
-			var timeIndex = 0;
+				timeIndex = 0,
+
+				schema = [];
+			for (var i in data.schema.fields) {
+				schema.push(data.schema.fields[i].name)
+			}
+
+			formattedData = [];
+
+			for (var i in data.rows) {
+				var obj = {};
+				obj[time] = +data.rows[i].f[schema.indexOf(time)].v;
+				obj.data = [];
+				obj.total = +data.rows[i].f[schema.indexOf('amount')].v;
+
+				for (var j = 1; j < 14; j++) {
+					var dataObj = {};
+					dataObj.class = classScale(j);
+					dataObj.amount = +data.rows[i].f[schema.indexOf('class'+j)].v;
+					dataObj.weight = 0;
+
+					if (dataObj.amount > 0) {
+						_pushUnique(classValues, dataObj.class);
+					}
+
+					obj.data.push(dataObj);
+				}
+
+				formattedData.push(obj);
+			}
+			
+			_createLegendLabels(classLegend, classValues, 'class')
+		}
+
+		// this function formats the data returned from Google big query
+		// into a more usable form. The formatted data is stored in the
+		// formattedData object variable.
+		function _formatWIMData(data) {
+			// variable to keep track of class types present in current data set
+			var classValues = [],
+			// variable to keep track of weight classes in current data set
+				weightValues = [],
+
+			// array index for time data
+				timeIndex = 0,
 
 			// get the names of attributes
-			var schema = [];
+				schema = [];
 			for (var i in data.schema.fields) {
 				schema.push(data.schema.fields[i].name)
 			}
@@ -456,7 +497,7 @@
 			while (i < data.rows.length) {
 				if (+data.rows[i].f[timeIndex].v === currentTimeIndex) {
 					// create a new data object for current time index
-					dataObj = {};
+					var dataObj = {};
 					for (var j = 1; j < schema.length; j++) {
 						dataObj[schema[j]] = +data.rows[i].f[j].v;
 					}
@@ -484,6 +525,8 @@
 			_createLegendLabels(classLegend, classValues, 'class')
 			_createLegendLabels(weightLegend, weightValues, 'weight')
 
+			return
+
 			function _clearWeightDistributionData() {
 				for (var i in wdScale.range()) {
 					weightDistributionData[i] = _newWDobj();
@@ -502,11 +545,10 @@
 
 				weightDistributionData[index][cls] += data.amount;
 			}
-
-			function _pushUnique(list, value) {
-				if (list.indexOf(value) === -1) {
-					list.push(value);
-				}
+		}
+		function _pushUnique(list, value) {
+			if (list.indexOf(value) === -1) {
+				list.push(value);
 			}
 		}
 		// attr must be the key to a sortable attribute of data.
@@ -518,11 +560,11 @@
 				return order*(a[attr] - b[attr]);
 			})
 		}
-
+		// this function converts a weight distribution class to a weight class
 		function _WD2Weight(i) {
 			var maxIndex = d3.max(weightScale.range());
 
-			return index = Math.min(Math.floor(i / (bandSize/WDbandSize)), maxIndex)
+			return Math.min(Math.floor(i / (bandSize/WDbandSize)), maxIndex)
 		}
 		function _filterWeightDistributionData() {
 			filtered = [];
@@ -562,7 +604,7 @@
 
 		   	var padding = (2*gap + barWidth) / (gap + barWidth);
 
-		    wdXscale.domain(wdScale.range())
+		    wdXscale.domain([])
 		    	.rangePoints([0, wdth], padding);
 
 		   	Yscale.domain([0, Ymax]);
@@ -621,7 +663,7 @@
 				.attr('fill', '#f00')
 		   		.remove();
 
-		    //wdGraphSVG.select('.x-axis').call(wdXaxis)
+		    wdGraphSVG.select('.x-axis').call(wdXaxis)
 		    wdGraphSVG.select('.y-axis').call(Yaxis);
 
 		}
@@ -659,6 +701,7 @@
 
 			return data;
 		}
+
 		// reduces the data on trucks, eliminating attr and summing
 		// truck amounts into keeper
 		function _reduce(data, attr, keeper) {
@@ -704,8 +747,6 @@
 		function _drawGraph() {
 			var dataObj = _reduceData(reduceBy, groupBy),
 				data = dataObj.data,
-				//Xmin = dataObj.Xmin,
-				//Xmax = dataObj.Xmax,
 				Ymax = dataObj.Ymax,
 				ticks = dataObj.ticks;
 
@@ -784,7 +825,7 @@
 		        			Amount: formatter(d.amount),
 		        		};
 		        	if ('class' in d) {
-		        		json.Class = d.class;
+		        		json.Class = classScale.domain()[d.class];
 		        	} else {
 			        	if (d.extent[0] === maxWeight) {
 			        		json.Extent = formatter(d.extent[0])+'+';
@@ -916,8 +957,26 @@
 			return d+'th';
 		}
 
-		self.drawGraph = function(station) {
+		self.drawGraph = function(station, type) {
 			stationID = station;
+			stationType = type;
+
+			route = '/stations/graph'+type+'Data/';
+
+			if (type == 'class') {
+				weightDistButton.classed('active', false)
+					.classed('inactive', false)
+					.classed('deactivated', true);
+
+				weightToggle.classed('active', false)
+					.classed('inactive', false)
+					.classed('deactivated', true);
+
+				_formatData = _formatClassData;
+			} else if (type == 'wim') {
+				_formatData = _formatWIMData;
+			}
+
 			_getData();
 		}
 	}

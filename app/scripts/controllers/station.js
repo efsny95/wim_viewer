@@ -3,7 +3,13 @@
 
 angular.module('wimViewerApp')
   .controller('StationCtrl', function ($scope,$http,$routeParams) {
-    $scope.station = $routeParams['stationId']
+    $scope.station = $routeParams['stationId'];
+    $scope.stationType = $routeParams['stationType'];
+
+    // create graph object and draw a graph
+    var grapher = wimgraph.grapher('#wimgraph');
+    grapher.drawGraph($scope.station, $scope.stationType);
+
     $scope.values = [
       { id: 0, label: 'All' },
       { id: 4, label: '4' },
@@ -95,9 +101,7 @@ angular.module('wimViewerApp')
               calCreate(rect,svg,$scope.myClass,data,day,week,percent,format,z,svg2,"trucks")
           });
           
-          // create graph object and draw a graph
-          $scope.grapher = wimgraph.grapher('#wimgraph');
-          $scope.grapher.drawGraph($scope.station);
+
 
           $scope.loadCalendar = function(){
             calCreate(rect,svg,$scope.myClass,$scope.stationData,day,week,percent,format,z,svg2,$scope.myDisp)
