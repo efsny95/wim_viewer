@@ -195,11 +195,14 @@
 		  			}
 		  			stations[getStationIndex(rowStation)].years.push({'year':row.f[1].v,'percent':(row.f[4].v)*100,'AADT':Math.round(row.f[5].v)});
 		  		});
+		  		
 		  		if (centered) {
 			  		$scope.$apply(function(){
 			  			$scope.stations = stations;
+			  			barGraph.drawBarGraph($scope.stations,$scope.barGraph);	
 		  			});
 			  	}
+
 			});
 
 		  	function getStationIndex(stationID){

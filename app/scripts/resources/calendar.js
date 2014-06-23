@@ -3,7 +3,75 @@
 
 
 var wimCalendar = {
-  drawCalendar:function(rect,svg,input_data,day,week,percent,format,z,svg2,dispType){
+  init:function(min,max){
+  	var html = [];
+  	var caldiv = d3.select("#caldiv");
+   	var m = {top: 10, right: 10, bottom: 25, left: 80},
+      w = parseInt(caldiv.style('width'))-m.right,
+      z = parseInt(w/54),
+      h = parseInt(z*7);
+      
+      //console.log('dim',w,h,z,w + m.right + m.left + 100);
+      var day = d3.time.format("%w"),
+          week = d3.time.format("%U"),
+          //percent = d3.format(".1%"),
+          format = d3.time.format("%Y-%m-%d");
+
+      
+
+      if(parseInt(min) < 10){
+            min = "0"+min
+          }
+          if(parseInt(max) < 10){
+            max = "0"+max
+          }
+
+          var svg = d3.select("#caldiv").selectAll("svg")
+              .data(d3.range(2000+parseInt(min), 2001+parseInt(max)))
+            .enter().append("svg")
+              .attr("width", w + m.right + m.left + 100)
+              .attr("height", h + m.top + m.bottom)
+              .attr("class", "RdYlGn")
+            .append("g")
+              .attr("transform", "translate(" + (m.bottom + (w - z * 53) / 2) + "," + (m.top + (h - z * 7) / 2) + ")");
+          svg.append("text")
+              .attr("transform", "translate(-6," + z * 3.5 + ")rotate(-90)")
+              .attr("text-anchor", "middle")
+              .text(String);
+          var svg2 = d3.select("#legend").selectAll("svg")
+              .data(d3.range(0, 1))
+            .enter().append("svg")
+              .attr("width", 1200)
+              .attr("height", 20)
+              .attr("class", "RdYlGn")
+            .append("g")
+              .attr("transform", "translate(60,0)");
+          var rect = svg.selectAll("rect.day")
+              .data(function(d) { 
+                return d3.time.days(new Date(d, 0, 1), new Date(d + 1, 0, 1)); })
+            .enter().append("rect")
+              .attr("class", "day")
+              .attr("width", z)
+              .attr("height", z)
+              .attr("x", function(d) { return week(d) * z; })
+              .attr("y", function(d) { return day(d) * z; })
+              //.map(format);
+
+          rect.append("title")
+              .text(function(d) { return d; });
+
+      html.push(z)
+    	html.push(day)
+    	html.push(week)
+    	html.push(svg)
+    	html.push(svg2)
+    	html.push(rect)
+
+    	return html
+
+  },
+
+  drawCalendar:function(rect,svg,input_data,day,week,z,svg2,dispType){
 	  
   		
   		var values = [];
@@ -65,8 +133,7 @@ var wimCalendar = {
 				      .style("color","#fff")
 				      .text(function(d) { return d; });
 
-
-	    function monthPath(t0) {
+		function monthPath(t0) {
 	      var t1 = new Date(t0.getFullYear(), t0.getMonth() + 1, 0),
 	          d0 = +day(t0), w0 = +week(t0),
 	          d1 = +day(t1), w1 = +week(t1);
@@ -76,6 +143,8 @@ var wimCalendar = {
 	          + "H" + (w1 + 1) * z + "V" + 0
 	          + "H" + (w0 + 1) * z + "Z";
 	    }
+
+	    
 	},
 
 colorDays:function(svg,input_data,monthPath,rect,color,dispType){
