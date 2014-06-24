@@ -93,6 +93,7 @@
 			  		
 		  		$scope.$apply(function() {
 		  			$scope.stations = [];
+		  			$scope.stationsClass = [];
 		  		});
 				clicked = false;
 			}
@@ -113,8 +114,7 @@
 	            		console.log(error);
 	            		return;
 	            	}
-	            	console.log(URL)
-					_drawStationPoints(_formatData(d, data));
+	            	_drawStationPoints(_formatData(d, data));
 					clicked = false;
 				})
 			}
@@ -209,57 +209,58 @@
 		  	var stations = [];
 
 			wimXHR.get(URL + id, function(error, data) {
-				while(stations.length > 0) {
-    				stations.pop();
-				}
             	if (error) {
             		console.log(error);
             		return;
             	}
-		  		data.rows.forEach(function(row){
-		  			var rowStation = row.f[0].v;
-		  			if(getStationIndex(rowStation) == -1) {
-		  				stations.push({'stationId':rowStation, years:[]})
-		  			}
-		  			stations[getStationIndex(rowStation)].years.push({'year':row.f[1].v,'percent':(row.f[4].v)*100,'AADT':Math.round(row.f[5].v)});
-		  		});
+            	if(data.rows != undefined){
+			  		data.rows.forEach(function(row){
+			  			var rowStation = row.f[0].v;
+			  			if(getStationIndex(rowStation) == -1) {
+			  				stations.push({'stationId':rowStation, years:[]})
+			  			}
+			  			stations[getStationIndex(rowStation)].years.push({'year':row.f[1].v,'percent':(row.f[4].v)*100,'AADT':Math.round(row.f[5].v)});
+			  		});
+			  	}
 		  		if (centered) {
 			  		$scope.$apply(function(){
-			  			$scope.stations = stations;
-			  			barGraph.drawBarGraph($scope.stations,$scope.barGraph);	
-		  			});
+			  			//$scope.stations = stations;
+			  		});
 			  	}
 
 			});
 			URL = 'stations/byState/class/'
-		
+			var stationsClass = [];
+
 			wimXHR.get(URL + id, function(error, data) {
-				while(stations.length > 0) {
-    				stations.pop();
-				}
-            	if (error) {
+				if (error) {
             		console.log(error);
             		return;
             	}
-		  		data.rows.forEach(function(row){
-		  			var rowStation = row.f[0].v;
-		  			if(getStationIndex(rowStation) == -1) {
-		  				stations.push({'stationId':rowStation, years:[]})
-		  			}
-		  			stations[getStationIndex(rowStation)].years.push({'year':row.f[1].v,'ADT':Math.round(row.f[2].v),'APT':Math.round(row.f[3].v),'ASU':Math.round(row.f[4].v),'ATT':Math.round(row.f[5].v)});
-		  		});
-		  		
-		  		// if (centered) {
-			  	// 	$scope.$apply(function(){
-			  	// 		$scope.stations = stations;
-			  	// 		barGraph.drawBarGraph($scope.stations,$scope.barGraph);	
-		  		// 	});
-			  	// }
+            	if(data.rows != undefined){
+			  		data.rows.forEach(function(row){
+				  			var rowStation = row.f[0].v;
+				  			if(getStationIndex(rowStation,"class") == -1) {
+				  				stationsClass.push({'stationId':rowStation, years:[]})
+				  			}
+				  			stationsClass[getStationIndex(rowStation,"class")].years.push({'year':row.f[1].v,'ADT':Math.round(row.f[2].v),'APT':Math.round(row.f[3].v),'ASU':Math.round(row.f[4].v),'ATT':Math.round(row.f[5].v)});
+			  		});
+		  		}
+		  		if (centered) {
+			  		$scope.$apply(function(){
+			  			$scope.stationsClass = stationsClass;
+			  		});
+			  	}
 
 			});
 
-		  	function getStationIndex(stationID){
-		  		return stations.map(function(el) {return el.stationId;}).indexOf(stationID);
+		  	function getStationIndex(stationID,classT){
+		  		if(classT != "class"){
+		  			return stations.map(function(el) {return el.stationId;}).indexOf(stationID)
+		  		}
+		  		else{
+		  			return stationsClass.map(function(el) {return el.stationId;}).indexOf(stationID)
+		  		}
 		  	}
 		}
 	}

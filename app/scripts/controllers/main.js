@@ -48,22 +48,15 @@ angular.module('wimViewerApp')
 
     URL = '/stations/allClass';
 
+AADTGraph.initAADTGraph("#barGraph");
 
-
-    $scope.$watch('stations', function() {
-      
-      if($scope.stations != undefined){
-          if($scope.stations.length == 0){
-            console.log("test")
-            
+    $scope.$watch('stationsClass', function() {
+      if($scope.stationsClass != undefined){
+          if($scope.stationsClass.length != 0){
+            AADTGraph.drawAADTGraph($scope.stationsClass,"class");
           }
           
         }
-      else{
-            $scope.barGraph = barGraph.initBarGraph();
-            
-        }
-
     });
 
 

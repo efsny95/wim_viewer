@@ -1,43 +1,27 @@
-//Quick sort thanks to: http://en.literateprograms.org/Quicksort_(JavaScript)
+var AADTGraph ={
+	svg:{},
 
+	initAADTGraph:function(elem){
 
- function swap(a, b,c)
-		{
-			var tmp=c[a];
-			c[a]=c[b];
-			c[b]=tmp;
-			return c
-		}
+		AADTGraph.margin = {top: 5, right: 5, bottom: 10, left:50},
+		AADTGraph.width = parseInt($(elem).width()) - AADTGraph.margin.left - AADTGraph.margin.right,
+		AADTGraph.height = parseInt($(elem).width()*0.75) - AADTGraph.margin.top - AADTGraph.margin.bottom;
 
-var barGraph ={
-
-	initBarGraph:function(){
-
-		var margin = {top: 20, right: 20, bottom: 30, left: 40},
-		    width = 1000 - margin.left - margin.right,
-		    height = 500 - margin.top - margin.bottom;
-
-		var svg = d3.select("#barGraph").append("svg")
-		    .attr("width", width + margin.left + margin.right)
-		    .attr("height", height + margin.top + margin.bottom)
+		AADTGraph.svg = d3.select(elem).append("svg")
+		    .attr("width", AADTGraph.width + AADTGraph.margin.left + AADTGraph.margin.right)
+		    .attr("height", AADTGraph.height + AADTGraph.margin.top + AADTGraph.margin.bottom)
 		  .append("g")
-		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-		 return svg;
+		    .attr("transform", "translate(" + AADTGraph.margin.left + "," + AADTGraph.margin.top + ")");
 
 	},
-
-	drawBarGraph:function(graphData,svg){
-
-		var margin = {top: 20, right: 20, bottom: 30, left: 40},
-		    width = 1000 - margin.left - margin.right,
-		    height = 500 - margin.top - margin.bottom;
+	drawAADTGraph:function(graphData,classT){
+		//console.log('graphData',graphData);
 
 		var x = d3.scale.ordinal()
-		    .rangeRoundBands([0, width], .1);
+		    .rangeRoundBands([0, AADTGraph.width], 0.1);
 
 		var y = d3.scale.linear()
-		    .range([height, 0]);
+		    .range([AADTGraph.height, 0]);
 
 		var xAxis = d3.svg.axis()
 		    .scale(x)
@@ -46,8 +30,9 @@ var barGraph ={
 		var yAxis = d3.svg.axis()
 		    .scale(y)
 		    .orient("left")
-		    //.ticks(10, "%");
-		qsort(graphData,0,graphData.length)
+		  
+		AADTGraph.graphData = graphData;
+		graphData.sort(compareStations);
 		x.domain(graphData.map(function(d,i) { return graphData[i].stationId; }));
 		y.domain([0, d3.max(graphData, function(d,i) { return totalAADT(graphData[i].years); })]);
 
@@ -55,9 +40,9 @@ var barGraph ={
 	        .domain([d3.min(graphData, function(d,i) { return totalAADT(graphData[i].years); }), d3.max(graphData, function(d,i) { return totalAADT(graphData[i].years); })])
 	        .range(colorbrewer.RdYlGn[11]);
 
-	    svg.selectAll("g").remove();
+	    AADTGraph.svg.selectAll("g").remove();
 
-		svg.append("g")
+		AADTGraph.svg.append("g")
 		  .attr("class", "y axis")
 		  .call(yAxis)
 		.append("text")
@@ -67,9 +52,9 @@ var barGraph ={
 		  .style("text-anchor", "end")
 		  .text("AAADT");
 
-		var rect =svg.selectAll("rect");
+		var rect =AADTGraph.svg.selectAll("rect");
 			rect.remove();
-			rect =svg.selectAll("rect")
+			rect =AADTGraph.svg.selectAll("rect")
 		  		.data(graphData);
 		rect.enter().append("rect")
 		  	.attr("class","enter")
@@ -77,60 +62,52 @@ var barGraph ={
 		  	.attr("width", x.rangeBand())
 		  	.attr("y", function(d,i) { return y(totalAADT(graphData[i].years)); })
 		  	.attr("style", function(d,i) { return  "fill:"+color(totalAADT(graphData[i].years))+";"; })
-		  	.attr("height", function(d,i) { return height - y(totalAADT(graphData[i].years)); })
-		  	.on("click",function(d,i) { window.location ="#/station/wim/"+ graphData[i].stationId; })
-		  	.on("mouseover",function(d,i) {$("#stationInfo").append("<p class=barDisp"+i+">Station: "+graphData[i].stationId+"<br> Number of years of data: "+graphData[i].years.length+" <br>ACompleteness: "+totalAADT(graphData[i].years,"percent")+" <br>AAADT: "+totalAADT(graphData[i].years)+"</p>");})
-		  	.on("mouseout",function(d,i) {$(".barDisp"+i).remove();});
-		
-		  
+		  	.attr("height", function(d,i) { return AADTGraph.height - y(totalAADT(graphData[i].years)); })
+		  	.on("click",function(d,i) { window.location ="/station/wim/"+ graphData[i].stationId; })
+		  	.on("mouseover",function(d,i) {
+		  		$(this).attr('opacity',0.5);
+		  		$('#map_station_'+graphData[i].stationId).attr('stroke-width','2px');
+		  		$('#map_station_'+graphData[i].stationId).attr('stroke','yellow');
+		  		if(classT != "class"){
+			  		var info =  "<p class="+graphData[i].stationId+">Station: " +graphData[i].stationId+
+								"<br> Number of years of data: "+graphData[i].years.length+
+								"<br>ACompleteness: "+totalAADT(graphData[i].years,"percent")+
+								"<br>AAADT: "+totalAADT(graphData[i].years)+
+								"</p>";
+				}
+				else{
+					var info = "<p class="+graphData[i].stationId+">Station: " +graphData[i].stationId+
+					"<br> Number of years of data: "+graphData[i].years.length+
+					"<br> ADT: "+totalAADT(graphData[i].years)+
+					"</p>"
+				}
 
+		  		$("#stationInfo").html(info);
+		  		//$("#stationInfo").show();
+		  	})
+		  	.on("mouseout",function(d,i) {
+		  		$('#map_station_'+graphData[i].stationId).attr('stroke-width','none');
+		  		$('#map_station_'+graphData[i].stationId).attr('stroke','none');
+		  		$(this).attr('opacity',1);
+		  		$("#stationInfo").html('');
+		  		//$("#stationInfo").hide();
+		  	});
+		
 		function totalAADT(arr,check){
 			var total = 0;
 
 			for(var i = 0;i<arr.length;i++){
-				if(check == undefined){
-					total = total + arr[i].AADT;
-				}
-				else{
-					total = total + arr[i].percent;	
-				}
+				if(classT === "class"){total = total + arr[i].ADT;}
+				else if(typeof check === 'undefined'){ total = total + arr[i].AADT; }
+				else{ total = total + arr[i].percent; }
 			}
-			total = total / arr.length
+
+			total = total / arr.length;
 			return total;
 		}
 		
-		function partition(array, begin, end, pivot)
-		{
-			var piv=totalAADT(array[pivot].years);
-			array = swap(pivot, end-1,array);
-			var store=begin;
-			var ix;
-			for(ix=begin; ix<end-1; ++ix) {
-				if(totalAADT(array[ix].years)<=piv) {
-					array = swap(store, ix,array);
-					++store;
-				}
-			}
-			array = swap(end-1, store,array);
-
-			return store;
-		}
-
-
-		function qsort(array, begin, end)
-		{
-			if(end-1>begin) {
-				var pivot=begin+Math.floor(Math.random()*(end-begin));
-
-				pivot=partition(array, begin, end, pivot);
-
-				qsort(array, begin, pivot);
-				qsort(array, pivot+1, end);
-			}
-		}
-
-		
+		function compareStations(a, b) {
+		  return totalAADT(a.years) - totalAADT(b.years);
+		}		
 	}
-
-
 }
