@@ -54,8 +54,7 @@ angular.module('wimViewerApp')
       
       if($scope.stations != undefined){
           if($scope.stations.length == 0){
-            //Clear out bar graph
-            //barGraph.drawBarGraph($scope.barGraph,"clean");
+            console.log("test")
             
           }
           

@@ -79,8 +79,8 @@ var barGraph ={
 		  	.attr("style", function(d,i) { return  "fill:"+color(totalAADT(graphData[i].years))+";"; })
 		  	.attr("height", function(d,i) { return height - y(totalAADT(graphData[i].years)); })
 		  	.on("click",function(d,i) { window.location ="#/station/wim/"+ graphData[i].stationId; })
-		  	.on("mouseover",function(d,i) {$("#stationInfo").append("<p class="+graphData[i].stationId+">Station: "+graphData[i].stationId+"<br> Number of years of data: "+graphData[i].years.length+" <br>ACompleteness: "+totalAADT(graphData[i].years,"percent")+" <br>AAADT: "+totalAADT(graphData[i].years)+"</p>");})
-		  	.on("mouseout",function(d,i) {$("."+graphData[i].stationId).remove();});
+		  	.on("mouseover",function(d,i) {$("#stationInfo").append("<p class=barDisp"+i+">Station: "+graphData[i].stationId+"<br> Number of years of data: "+graphData[i].years.length+" <br>ACompleteness: "+totalAADT(graphData[i].years,"percent")+" <br>AAADT: "+totalAADT(graphData[i].years)+"</p>");})
+		  	.on("mouseout",function(d,i) {$(".barDisp"+i).remove();});
 		
 		  
 

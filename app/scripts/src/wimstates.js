@@ -113,6 +113,7 @@
 	            		console.log(error);
 	            		return;
 	            	}
+	            	console.log(URL)
 					_drawStationPoints(_formatData(d, data));
 					clicked = false;
 				})
@@ -208,25 +209,52 @@
 		  	var stations = [];
 
 			wimXHR.get(URL + id, function(error, data) {
+				while(stations.length > 0) {
+    				stations.pop();
+				}
             	if (error) {
             		console.log(error);
             		return;
             	}
 		  		data.rows.forEach(function(row){
 		  			var rowStation = row.f[0].v;
-		  			
 		  			if(getStationIndex(rowStation) == -1) {
 		  				stations.push({'stationId':rowStation, years:[]})
 		  			}
 		  			stations[getStationIndex(rowStation)].years.push({'year':row.f[1].v,'percent':(row.f[4].v)*100,'AADT':Math.round(row.f[5].v)});
 		  		});
-		  		
 		  		if (centered) {
 			  		$scope.$apply(function(){
 			  			$scope.stations = stations;
 			  			barGraph.drawBarGraph($scope.stations,$scope.barGraph);	
 		  			});
 			  	}
+
+			});
+			URL = 'stations/byState/class/'
+		
+			wimXHR.get(URL + id, function(error, data) {
+				while(stations.length > 0) {
+    				stations.pop();
+				}
+            	if (error) {
+            		console.log(error);
+            		return;
+            	}
+		  		data.rows.forEach(function(row){
+		  			var rowStation = row.f[0].v;
+		  			if(getStationIndex(rowStation) == -1) {
+		  				stations.push({'stationId':rowStation, years:[]})
+		  			}
+		  			stations[getStationIndex(rowStation)].years.push({'year':row.f[1].v,'ADT':Math.round(row.f[2].v),'APT':Math.round(row.f[3].v),'ASU':Math.round(row.f[4].v),'ATT':Math.round(row.f[5].v)});
+		  		});
+		  		
+		  		// if (centered) {
+			  	// 	$scope.$apply(function(){
+			  	// 		$scope.stations = stations;
+			  	// 		barGraph.drawBarGraph($scope.stations,$scope.barGraph);	
+		  		// 	});
+			  	// }
 
 			});
 
