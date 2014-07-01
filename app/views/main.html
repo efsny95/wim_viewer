@@ -22,7 +22,30 @@
 
 
 </style>
+<div>
+<label>Type of Graph:
+<select class="form-control2" ng-model="myBarType" ng-options="item3.id as item3.label for item3 in barType" style='width:75px;display:inline;margin-right:5px;'></select>
+</label>
 
+<span ng-hide="myBarType=='Year'">
+    <label>Class:
+        <select class="form-control2" ng-model="myTruckClass" ng-options="item.id as item.label for item in truckClass" style='width:75px;display:inline;margin-right:5px;'></select>
+    </label>
+</span>
+<span ng-hide="myBarType=='Weight'">
+    <label>Vehicle Type:
+        <select class="form-control2" ng-model="myVehicleTypeArr" ng-options="item2.id as item2.label for item2 in vehicleTypeArr" style='width:75px;display:inline;margin-right:5px;'></select>
+    </label>
+    <label>Year:
+        <select class="form-control2" ng-model="myYearA" ng-options="item4.id as item4.label for item4 in yearList" style='width:75px;display:inline;margin-right:5px;'></select>
+    </label>
+    <span ng-hide="myYearA=='--'">
+        <label>Year Compare:
+        <select class="form-control2" ng-model="myYearB" ng-options="item5.id as item5.label for item5 in yearList" style='width:75px;display:inline;margin-right:5px;'></select>
+    </label>
+    </span>
+</span>
+</div>
 <div id="stationInfo" style="position:absolute;width:200px;background-color:#fff"></div>
 
 <div id="barGraph" class="bar">

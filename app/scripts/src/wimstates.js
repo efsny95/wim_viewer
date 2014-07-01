@@ -94,6 +94,7 @@
 		  		$scope.$apply(function() {
 		  			$scope.stations = [];
 		  			$scope.stationsClass = [];
+		  			$scope.stationsWeight = [];
 		  		});
 				clicked = false;
 			}
@@ -206,29 +207,41 @@
 				id = '0' + id;
 			}
 
-		  	var stations = [];
+			/*********************************************************************************************
 
-			wimXHR.get(URL + id, function(error, data) {
-            	if (error) {
-            		console.log(error);
-            		return;
-            	}
-            	if(data.rows != undefined){
-			  		data.rows.forEach(function(row){
-			  			var rowStation = row.f[0].v;
-			  			if(getStationIndex(rowStation) == -1) {
-			  				stations.push({'stationId':rowStation, years:[]})
-			  			}
-			  			stations[getStationIndex(rowStation)].years.push({'year':row.f[1].v,'percent':(row.f[4].v)*100,'AADT':Math.round(row.f[5].v)});
-			  		});
-			  	}
-		  		if (centered) {
-			  		$scope.$apply(function(){
-			  			//$scope.stations = stations;
-			  		});
-			  	}
+			DO NOT DELETE BELOW COMMENTED BLOCKS OF CODE. THEY ARE COMMENTED OUT FOR TESTING PURPOSES
+			AND MAY NEED TO BE USED IN THE FUTURE. PLEASE READ COMMENTS GIVEN BEFORE EACH BLOCK OF CODE!
 
-			});
+			*********************************************************************************************/
+
+			/*Below block of code is the original query ran for creating the first version of the bar graph*/
+
+		 //  	var stations = [];
+
+			// wimXHR.get(URL + id, function(error, data) {
+   //          	if (error) {
+   //          		console.log(error);
+   //          		return;
+   //          	}
+   //          	if(data.rows != undefined){
+			//   		data.rows.forEach(function(row){
+			//   			var rowStation = row.f[0].v;
+			//   			if(getStationIndex(rowStation) == -1) {
+			//   				stations.push({'stationId':rowStation, years:[]})
+			//   			}
+			//   			stations[getStationIndex(rowStation)].years.push({'year':row.f[1].v,'percent':(row.f[4].v)*100,'AADT':Math.round(row.f[5].v)});
+			//   		});
+			//   	}
+		 //  		if (centered) {
+			//   		$scope.$apply(function(){
+			//   			//$scope.stations = stations;
+			//   		});
+			//   	}
+
+			// });
+
+			/* The following block of code is used to get station data for trucks by class for the bar graph*/
+
 			URL = 'stations/byState/class/'
 			var stationsClass = [];
 
@@ -246,6 +259,9 @@
 				  				stationsClass[getStationIndex(rowStation,"class")].heights.push({'y0':0,'y1':0})
 				  				stationsClass[getStationIndex(rowStation,"class")].heights.push({'y0':0,'y1':0})
 				  			}
+				  			if(parseInt(row.f[1].v) < 10){
+				  				row.f[1].v = "0"+row.f[1].v
+				  			}
 				  			stationsClass[getStationIndex(rowStation,"class")].years.push({'year':row.f[1].v,'ADT':Math.round(row.f[2].v),'APT':Math.round(row.f[3].v),'ASU':Math.round(row.f[4].v),'ATT':Math.round(row.f[5].v)});
 				  			
 			  		});
@@ -258,8 +274,46 @@
 
 			});
 
+			/*The following block of code is used for creating a bar graph that looks at total weight over total time
+			at the station*/
+
+			URL = 'stations/byState/weight/'
+			var stationsWeight = [];
+		    wimXHR.post(URL + id, {class:$scope.myTruckClass},function(error, data) {
+				if (error) {
+            		console.log(error);
+            		return;
+            	}
+            	if(data.rows != undefined){
+
+            		data.rows.forEach(function(row){
+						var rowStation = row.f[0].v;
+						if(getStationIndex(rowStation,"weight") == -1) {
+							stationsWeight.push({'stationId':rowStation, years:[]})
+							
+						}
+						if(parseInt(row.f[1].v) < 10){
+							row.f[1].v = "0"+row.f[1].v
+						}
+						stationsWeight[getStationIndex(rowStation,"weight")].years.push({'year':row.f[1].v,'hours':row.f[2].v,'Weight':row.f[3].v});
+					
+					});
+			  		
+			  		if (centered) {
+				  		
+					  	$scope.$apply(function(){
+					  		$scope.stationsWeight = stationsWeight;
+					  	});
+					}	
+			  	}
+
+			});
+			
 		  	function getStationIndex(stationID,classT){
-		  		if(classT != "class"){
+		  		if(classT === "weight"){
+		  			return stationsWeight.map(function(el) {return el.stationId;}).indexOf(stationID)
+		  		}
+		  		else if(classT != "class"){
 		  			return stations.map(function(el) {return el.stationId;}).indexOf(stationID)
 		  		}
 		  		else{
