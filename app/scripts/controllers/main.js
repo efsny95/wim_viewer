@@ -103,9 +103,11 @@ angular.module('wimViewerApp')
     AADTGraph.initAADTGraph("#barGraph");
 
     $scope.$watch('stationsWeight', function() {
+      barTable.removeTable();
       if($scope.stationsWeight != undefined){
         if($scope.stationsWeight.length != 0){
             if($scope.myBarType == "Weight"){
+              barTable.drawTable($scope.stationsWeight);
               AADTGraph.drawAADTGraphWeight($scope.stationsWeight,"weight",$scope.myTruckClass);
             }
           }
@@ -127,6 +129,7 @@ angular.module('wimViewerApp')
                     yearArr = [$scope.myYearA]
                   }
                 }
+                barTable.drawTable($scope.stationsClass);
                 AADTGraph.drawAADTGraph($scope.stationsClass,"class",$scope.myVehicleTypeArr,yearArr); 
               }
           }
