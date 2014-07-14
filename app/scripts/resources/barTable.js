@@ -1,6 +1,7 @@
 var barTable = {
 	
-	drawTable:function(data){
+	drawTable:function(cleanData){
+		var data = JSON.parse(JSON.stringify(cleanData))
 		var htmlCode = "<table class=\"table table-hover table-bordered\">";
 		var min = data[0].years[0].year
 		var max = data[0].years[0].year
@@ -14,10 +15,9 @@ var barTable = {
 				}
 			}
 			data[x].years.sort(compareYears)
+
 		}
-		console.log(data)
 		var range = (parseInt(max) - parseInt(min)) + 1
-		console.log(range)
 		var displayedYear = parseInt(min)
 		htmlCode = htmlCode + "<tr><th>Station ID</th>";
 		for(var w = 0;w<range;w++){
@@ -55,7 +55,6 @@ var barTable = {
 	},	
 
 	removeTable:function(){
-		console.log("test")
 		$("#barTable").html('')
 	},
 

@@ -1,5 +1,6 @@
 var wimTable = {
 	drawTable:function(data){
+		console.log(data)
 		var nameMap = { func_class_code : 'Functional Class Code',
 			num_lanes_direc_indicated:"Num Lanes",
 			sample_type_for_traffic_vol:"Traffic Volume Trends Site",

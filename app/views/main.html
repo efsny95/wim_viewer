@@ -22,10 +22,30 @@
     background-color: green;
 }
 
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
 
 
 </style>
 <div id="barTable"></div>
+<div>
+<label>Display Over Weight As Line Graph:
+    <select class="form-control2" ng-model="myLine" ng-options="item7.id as item7.label for item7 in line" style='width:75px;display:inline;margin-right:5px;'></select>
+</label>
+<label>Order by:
+<select class="form-control2" ng-model="myOrder" ng-options="item7.id as item7.label for item7 in time_order" style='width:75px;display:inline;margin-right:5px;'></select>
+</label>
+<span ng-hide="myLine=='on'">
+<label>Over Weight Trucks by:
+<select class="form-control2" ng-model="myTimePeriod" ng-options="item6.id as item6.label for item6 in timePeriod" style='width:75px;display:inline;margin-right:5px;'></select>
+</label>
+</span>
+
+</div>
 <div>
 <label>Type of Graph:
 <select class="form-control2" ng-model="myBarType" ng-options="item3.id as item3.label for item3 in barType" style='width:75px;display:inline;margin-right:5px;'></select>
@@ -49,6 +69,7 @@
     </label>
     </span>
 </span>
+<br><button class='btn btn-info' type="button" ng-click="loadGraphs()">Apply</button>
 </div>
 <div id="stationInfo" style="position:absolute;width:200px;background-color:#fff"></div>
 

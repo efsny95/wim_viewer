@@ -42,17 +42,10 @@ var AADTGraph ={
 
 	drawAADTGraph:function(graphData,classT,PST,year){
 
-	/*********************************************************************************************
-
-			DO NOT DELETE BELOW COMMENTED BLOCKS OF CODE. THEY ARE COMMENTED OUT FOR TESTING PURPOSES
-			AND MAY NEED TO BE USED IN THE FUTURE. PLEASE READ COMMENTS GIVEN BEFORE EACH BLOCK OF CODE!
-
-			*********************************************************************************************/
 
 	/*Below Block of code is used for making a graph that displays data based on year*/
 
 
-		//console.log('graphData',graphData);
 		var x = d3.scale.ordinal()
 		    .rangeRoundBands([0, AADTGraph.width], 0.1);
 
@@ -78,6 +71,7 @@ var AADTGraph ={
 		for two specific years should be done.
 
 		*/
+
 		for(var z = 0;z<graphData.length;z++){
 			if(PST != undefined){
 				if(PST[1] || PST[0]){
@@ -177,8 +171,6 @@ var AADTGraph ={
 			
 		}
 		graphData.sort(compareStations); 
-		AADTGraph.graphData = graphData;
-
 		x.domain(graphData.map(function(d,i) { return graphData[i].stationId; }));
 		y.domain([0, d3.max(graphData, function(d,i) { return graphData[i].heights[2].y1; })]);
 		//y.domain(d3.extent(function(d,i) { return graphData[i].heights[2].y1; })).nice();

@@ -5,11 +5,54 @@ angular.module('wimViewerApp')
 
     var state2fips = {"01": "Alabama","02": "Alaska","04": "Arizona","05": "Arkansas","06": "California","08": "Colorado","09": "Connecticut","10": "Delaware","11": "District of Columbia","12": "Florida","13": "Geogia","15": "Hawaii","16": "Idaho","17": "Illinois","18": "Indiana","19": "Iowa","20": "Kansas","21": "Kentucky","22": "Louisiana","23": "Maine","24": "Maryland","25": "Massachusetts","26": "Michigan","27": "Minnesota","28": "Mississippi","29": "Missouri","30": "Montana","31": "Nebraska","32": "Nevada","33": "New Hampshire","34": "New Jersey","35": "New Mexico","36": "New York","37": "North Carolina","38": "North Dakota","39": "Ohio","40": "Oklahoma","41": "Oregon","42": "Pennsylvania","44": "Rhode Island","45": "South Carolina","46": "South Dakota","47": "Tennessee","48": "Texas","49": "Utah","50": "Vermont","51": "Virginia","53": "Washington","54": "West Virginia","55": "Wisconsin","56": "Wyoming"};
 
-    $scope.barGraph;
+
+    /*
+    THINGS THAT SHOULD BE ADDED:
+
+    Error message of some kind when trying to display data for classes of trucks or years of data that don't exist
+
+    */
+
+
+    //$scope.barGraph;
+
+    //Used to select type of bar graph
+
     $scope.barType = [
       { id: "Year", label:'Year'},
       { id: "Weight", label:'Weight'},
     ];
+
+    //Used when displaying over weight truck data not as a line graph only
+
+    $scope.timePeriod = [
+
+      { id:"year", label:'Year'},
+      { id:"month", label:'Month'},
+      { id:"day", label:'Day'},
+
+    ];
+
+    //Method of organization for overweight truck data
+
+    $scope.time_order =[
+
+    { id:"count",label:'Count'},
+    { id:"percent",label:'Percent'},
+
+    ];
+
+    //Whether to display over weight data as a line or bar graph
+
+    $scope.line = [
+
+    { id:"on",label:'Yes'},
+    { id:"off",label:'No'}
+
+    ];
+
+    //Avaiable classes of trucks
+
     $scope.truckClass = [
               { id: 1, label: '1' },
               { id: 2, label: '2' },
@@ -25,6 +68,9 @@ angular.module('wimViewerApp')
               { id: 12, label: '12' },
               { id: 13, label: '13' },
             ];
+
+    //List of years you can select data from.
+
     $scope.yearList = [
       { id:"--",label:'No Year'},
       { id:"00",label:'2000'},
@@ -43,6 +89,9 @@ angular.module('wimViewerApp')
       { id:"13",label:'2013'},
       { id:"14",label:'2014'},
     ];
+
+    //Types of vehicle data you can select for the bar graph when year is selected
+
     $scope.vehicleTypeArr = [
               { id: [true,false,false,false], label: 'All'},
               { id: [false,true,false,false], label: 'APT'},
@@ -53,13 +102,46 @@ angular.module('wimViewerApp')
               { id: [false,false,false,true], label: 'ATT'},
     ];
 
-    $scope.myVehicleTypeArr = $scope.vehicleTypeArr[0].id
-    $scope.myTruckClass = $scope.truckClass[0].id
+    //The myBarType variabe is used to determine whether you are using weight or year data
+    
     $scope.myBarType = $scope.barType[0].id
+
+    //Display data only used with weight data
+
+    $scope.myTruckClass = $scope.truckClass[0].id
+    
+    //Display data only used with year data
+
+    $scope.myVehicleTypeArr = $scope.vehicleTypeArr[0].id
     $scope.myYearA = $scope.yearList[0].id
     $scope.myYearB = $scope.yearList[0].id
-    // $scope.states = [];
+    
+    //Display data used with both line and bar graph
 
+    $scope.myLine = $scope.line[1].id
+    $scope.myOrder = $scope.time_order[0].id
+
+    //Display data used only with bar graph
+
+    $scope.myTimePeriod = $scope.timePeriod[0].id
+
+    /*
+      The following two variables are used to make sure multiple get requests aren't made
+      so that the data you are working with is not as redundant. They are initially set
+      to the string FR which is short for "first run." This is so that the first time the
+      code is ran, there are no errors that may occur.
+    */
+    $scope.curYearWeight = "FR"
+    $scope.curLine = "FR"
+
+    //Below are the arrays used to hold data to be displayed in the graphs. Was having trouble with watch and apply
+    //so this is part of my work around.
+   
+    $scope.stationsClass = [];
+    $scope.stationsWeight = [];
+    $scope.overWeightTrucks = [];
+
+    
     var states = {};
     var yearArr = [];
     var URL = '/stations/byState',
@@ -99,44 +181,6 @@ angular.module('wimViewerApp')
     })
 
     URL = '/stations/allClass';
-
-    AADTGraph.initAADTGraph("#barGraph");
-
-    $scope.$watch('stationsWeight', function() {
-      barTable.removeTable();
-      if($scope.stationsWeight != undefined){
-        if($scope.stationsWeight.length != 0){
-            if($scope.myBarType == "Weight"){
-              barTable.drawTable($scope.stationsWeight);
-              AADTGraph.drawAADTGraphWeight($scope.stationsWeight,"weight",$scope.myTruckClass);
-            }
-          }
-          
-      }
-    });
-    $scope.$watch('stationsClass', function() {
-      if($scope.stationsClass != undefined){
-        if($scope.stationsClass.length != 0){
-            if($scope.myBarType === "Year"){
-                while(yearArr.length > 0){
-                  yearArr.pop()
-                }
-                if($scope.myYearA != "--"){
-                  if($scope.myYearB != "--"){
-                    yearArr = [$scope.myYearA,$scope.myYearB]
-                  }
-                  else{
-                    yearArr = [$scope.myYearA]
-                  }
-                }
-                barTable.drawTable($scope.stationsClass);
-                AADTGraph.drawAADTGraph($scope.stationsClass,"class",$scope.myVehicleTypeArr,yearArr); 
-              }
-          }
-          
-      }
-    });
-
 
     $("#barGraph").on("mousemove", function(e) {
      
