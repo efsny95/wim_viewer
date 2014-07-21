@@ -214,6 +214,7 @@
 				AADTGraph.initAADTGraph("#barGraph");
 			    truckWeightGraph.initTruckWeightGraph("#barGraph");
 			    lineChart.initlineChart("#barGraph");
+			    monthlyLineChart.initMonthlylLineChart("#barGraph");
 			}
 
 			//Stations class must be outside the load graphs scope due to the data being worked with
@@ -293,7 +294,6 @@
 			}
 			//If looking at the same data again
 			else if(($scope.curYearWeight === $scope.myBarType) && $scope.curYearWeight === "Year") {
-					console.log("help")
 					barTable.removeTable();
 					$scope.stationsClass = JSON.parse(JSON.stringify(stationsClass));
 					if($scope.myBarType === "Year"){
@@ -311,7 +311,6 @@
 						          if($scope.stationsClass.length != 0){
 						            barTable.drawTable($scope.stationsClass);
 						          }
-						          console.log($scope.stationsClass)
 						          AADTGraph.drawAADTGraph($scope.stationsClass,"class",$scope.myVehicleTypeArr,yearArr); 
 						        }
 			}
@@ -448,6 +447,82 @@
 		            
 		        }
 			}
+
+			//Monthly AADT
+
+			if($scope.curState === "Blank" && $scope.myTimePeriod2 === "month"){
+
+			URL = 'stations/byState/byMonthLine/'
+				var stationsMonth = [];
+			    wimXHR.get(URL + id, function(error, data) {
+					if (error) {
+	            		console.log(error);
+	            		return;
+	            	}
+	            	if(data.rows != undefined){
+
+	            		data.rows.forEach(function(row){
+							var rowStation = row.f[0].v;
+							if(getStationIndex(rowStation,"month") == -1) {
+								stationsMonth.push({'stationId':rowStation, 'funcCode':row.f[6].v,monthsAll:[0,0,0,0,0,0,0,0,0,0,0,0], monthsAPT:[0,0,0,0,0,0,0,0,0,0,0,0], monthsASU:[0,0,0,0,0,0,0,0,0,0,0,0], monthsATT:[0,0,0,0,0,0,0,0,0,0,0,0]})
+								
+							}
+							stationsMonth[getStationIndex(rowStation,"month")].monthsAll[parseInt(row.f[1].v)-1] = parseInt(row.f[2].v)
+							stationsMonth[getStationIndex(rowStation,"month")].monthsAPT[parseInt(row.f[1].v)-1] = parseInt(row.f[3].v)
+							stationsMonth[getStationIndex(rowStation,"month")].monthsASU[parseInt(row.f[1].v)-1] = parseInt(row.f[4].v)
+							stationsMonth[getStationIndex(rowStation,"month")].monthsATT[parseInt(row.f[1].v)-1] = parseInt(row.f[5].v)
+							
+
+						
+						});
+				  		
+				  		
+						  		$scope.stationsMonthlyTraffic = JSON.parse(JSON.stringify(stationsMonth));
+						  		monthlyLineChart.drawMonthlyLineChart($scope.stationsMonthlyTraffic,$scope.myMonthlyTraffic);
+              					
+				  	}
+
+				});
+			}
+			else if($scope.myTimePeriod2 === "month"){
+				monthlyLineChart.drawMonthlyLineChart($scope.stationsMonthlyTraffic,$scope.myMonthlyTraffic);
+			}
+
+			if($scope.curState === "Blank" && $scope.myTimePeriod2 === "hour"){
+			URL = 'stations/byState/byHourLine/'
+				var stationsHour = [];
+			    wimXHR.get(URL + id,function(error, data) {
+					if (error) {
+	            		console.log(error);
+	            		return;
+	            	}
+	            	if(data.rows != undefined){
+
+	            		data.rows.forEach(function(row){
+							var rowStation = row.f[0].v;
+							if(getStationIndex(rowStation,"hour") == -1) {
+								stationsHour.push({'stationId':rowStation, 'funcCode':row.f[6].v,hoursAll:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], hoursAPT:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], hoursASU:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], hoursATT:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]})
+								
+							}
+							stationsHour[getStationIndex(rowStation,"hour")].hoursAll[parseInt(row.f[1].v)] = parseInt(row.f[2].v)
+							stationsHour[getStationIndex(rowStation,"hour")].hoursAPT[parseInt(row.f[1].v)] = parseInt(row.f[3].v)
+							stationsHour[getStationIndex(rowStation,"hour")].hoursASU[parseInt(row.f[1].v)] = parseInt(row.f[4].v)
+							stationsHour[getStationIndex(rowStation,"hour")].hoursATT[parseInt(row.f[1].v)] = parseInt(row.f[5].v)
+							
+
+						
+						});
+				  		
+				  				$scope.stationsHourlyTraffic = JSON.parse(JSON.stringify(stationsHour));
+						  		monthlyLineChart.drawHourlyLineChart($scope.stationsHourlyTraffic,$scope.myMonthlyTraffic);
+              					
+				  	}
+
+				});
+			}
+			else if($scope.myTimePeriod2 === "hour"){
+				monthlyLineChart.drawHourlyLineChart($scope.stationsHourlyTraffic,$scope.myMonthlyTraffic);
+			}
 			
 		  	function getStationIndex(stationID,classT){
 		  		if(classT === "weight"){
@@ -455,6 +530,12 @@
 		  		}
 		  		else if(classT === "overweight"){
 		  			return overWeight.map(function(el) {return el.stationId;}).indexOf(stationID)
+		  		}
+		  		else if(classT === "month"){
+		  			return stationsMonth.map(function(el){return el.stationId;}).indexOf(stationID)
+		  		}
+		  		else if(classT === "hour"){
+		  			return stationsHour.map(function(el){return el.stationId;}).indexOf(stationID)
 		  		}
 		  		else if(classT != "class"){
 		  			return stations.map(function(el) {return el.stationId;}).indexOf(stationID)

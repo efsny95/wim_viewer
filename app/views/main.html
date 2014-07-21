@@ -28,16 +28,50 @@
   stroke-width: 1.5px;
 }
 
+.cities {
+  fill: none;
+  stroke: #aaa;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  stroke-width: 1.5px;
+}
+
+.city--hover {
+  stroke: #000;
+}
+
+.focus text {
+  text-anchor: middle;
+  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+}
+
+.voronoi path {
+  fill: none;
+  pointer-events: all;
+}
+
+.voronoi--show path {
+  stroke: red;
+  stroke-opacity: .2;
+}
+
+#form {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+}
+
 
 
 </style>
+
 <div id="barTable"></div>
 <div>
 <label>Display Over Weight As Line Graph:
     <select class="form-control2" ng-model="myLine" ng-options="item7.id as item7.label for item7 in line" style='width:75px;display:inline;margin-right:5px;'></select>
 </label>
 <label>Order by:
-<select class="form-control2" ng-model="myOrder" ng-options="item7.id as item7.label for item7 in time_order" style='width:75px;display:inline;margin-right:5px;'></select>
+<select class="form-control2" ng-model="myOrder" ng-options="item8.id as item8.label for item8 in time_order" style='width:75px;display:inline;margin-right:5px;'></select>
 </label>
 <span ng-hide="myLine=='on'">
 <label>Over Weight Trucks by:
@@ -57,6 +91,10 @@
     </label>
 </span>
 <span ng-hide="myBarType=='Weight'">
+    <label>Display Year As Line Graph:
+         <select class="form-control2" ng-model="myLine2" ng-options="item9.id as item9.label for item9 in line2" style='width:75px;display:inline;margin-right:5px;'></select>
+    </label>
+    <span ng-hide="myLine2=='on'">
     <label>Vehicle Type:
         <select class="form-control2" ng-model="myVehicleTypeArr" ng-options="item2.id as item2.label for item2 in vehicleTypeArr" style='width:75px;display:inline;margin-right:5px;'></select>
     </label>
@@ -67,7 +105,17 @@
         <label>Year Compare:
         <select class="form-control2" ng-model="myYearB" ng-options="item5.id as item5.label for item5 in yearList" style='width:75px;display:inline;margin-right:5px;'></select>
     </label>
+        </span>
+        </span>
+    <span ng-hide="myLine2=='off'">
+        <label>Time Period:
+            <select class="form-control2" ng-model="myTimePeriod2" ng-options="item11.id as item11.label for item11 in timePeriod2" style='width:75px;display:inline;margin-right:5px;'></select>
+            </label>
+            <label>Vehicle Type:
+            <select class="form-control2" ng-model="myMonthlyTraffic" ng-options="item10.id as item10.label for item10 in vehicleTypeArr2" style='width:75px;display:inline;margin-right:5px;'></select>
+        </label>
     </span>
+    
 </span>
 <br><button class='btn btn-info' type="button" ng-click="loadGraphs()">Apply</button>
 </div>

@@ -33,6 +33,15 @@ angular.module('wimViewerApp')
 
     ];
 
+    //Below is used to select between hourly and monthly data
+
+    $scope.timePeriod2 = [
+
+      { id:"hour",label:"Hourly"},
+      { id:"month",label:"Monthly"},
+
+    ];
+
     //Method of organization for overweight truck data
 
     $scope.time_order =[
@@ -50,6 +59,14 @@ angular.module('wimViewerApp')
     { id:"off",label:'No'}
 
     ];
+
+    $scope.line2 = [
+
+    { id:"on",label:'Yes'},
+    { id:"off",label:'No'}
+
+    ];
+
 
     //Avaiable classes of trucks
 
@@ -101,6 +118,13 @@ angular.module('wimViewerApp')
               { id: [false,false,true,true], label: 'ASU and ATT'},
               { id: [false,false,false,true], label: 'ATT'},
     ];
+    $scope.vehicleTypeArr2 = [
+              { id: "All", label: 'All'},
+              { id: "APT", label: 'APT'},
+              { id: "ASU", label: 'ASU'},
+              { id: "ATT", label: 'ATT'},
+
+    ]
 
     //The myBarType variabe is used to determine whether you are using weight or year data
     
@@ -125,14 +149,26 @@ angular.module('wimViewerApp')
 
     $scope.myTimePeriod = $scope.timePeriod[0].id
 
+    //Used for AADT line graph
+
+    $scope.myMonthlyTraffic = $scope.vehicleTypeArr2[0].id
+
+    //Used to select which type of data gets displayed: Hourly or monthly
+
+    $scope.myTimePeriod2 = $scope.timePeriod2[0].id
+    $scope.myLine2 = $scope.line2[1].id
+
     /*
-      The following two variables are used to make sure multiple get requests aren't made
+      The following three variables are used to make sure multiple get requests aren't made
       so that the data you are working with is not as redundant. They are initially set
       to the string FR which is short for "first run." This is so that the first time the
       code is ran, there are no errors that may occur.
+
+      curState is to be used to indicate the current state for when the state being examined is changed
     */
     $scope.curYearWeight = "FR"
     $scope.curLine = "FR"
+    $scope.curState = "Blank"
 
     //Below are the arrays used to hold data to be displayed in the graphs. Was having trouble with watch and apply
     //so this is part of my work around.
@@ -140,6 +176,8 @@ angular.module('wimViewerApp')
     $scope.stationsClass = [];
     $scope.stationsWeight = [];
     $scope.overWeightTrucks = [];
+    $scope.stationsMonthlyTraffic = [];
+    $scope.stationsHourlyTraffic = [];
 
     
     var states = {};
