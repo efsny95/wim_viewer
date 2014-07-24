@@ -220,6 +220,7 @@
 			//Stations class must be outside the load graphs scope due to the data being worked with
 
 			var stationsClass = [];
+			var stationsTable = [];
 
 			
 
@@ -270,7 +271,7 @@
 					  		});
 				  		}
 				  		 $scope.stationsClass = JSON.parse(JSON.stringify(stationsClass));
-					  			barTable.removeTable();
+				  		 		barTable.removeTable();
 					  			if($scope.myBarType === "Year"){
 							          while(yearArr.length > 0){
 							            yearArr.pop()
@@ -283,17 +284,39 @@
 							              yearArr = [$scope.myYearA]
 							            }
 							          }
-							          if($scope.stationsClass.length != 0){
-							            barTable.drawTable($scope.stationsClass);
-							          }
 							          AADTGraph.drawAADTGraph($scope.stationsClass,"class",$scope.myVehicleTypeArr,yearArr);
 							          $scope.curYearWeight = "Year" 
 							        }
 
 				});
+				URL = '/stations/byState/classTable/'
+				wimXHR.get(URL + id, function(error, data) {
+						if (error) {
+		            		console.log(error);
+		            		return;
+		            	}
+		            	if(data.rows != undefined){
+					  		data.rows.forEach(function(row){
+						  			var rowStation = row.f[0].v;
+						  			if(getStationIndex(row.f[4].v,"state") == -1){
+						  				stationsTable.push({'state':row.f[4].v,stations:[]})
+						  			}
+						  			if(getStationIndex(row.f[4].v,"class2",rowStation) == -1) {
+						  				stationsTable[getStationIndex(row.f[4].v,"state")].stations.push({'stationId':rowStation, years:[]})
+						  			}
+						  			if(getStationIndex(row.f[4].v,"year",rowStation,row.f[1].v) == -1){
+						  				stationsTable[getStationIndex(row.f[4].v,"state")].stations[getStationIndex(row.f[4].v,"class2",rowStation)].years.push({'year':row.f[1].v,months:[0,0,0,0,0,0,0,0,0,0,0,0]})
+						  			}
+						  			stationsTable[getStationIndex(row.f[4].v,"state")].stations[getStationIndex(row.f[4].v,"class2",rowStation)].years[getStationIndex(row.f[4].v,"year",rowStation,row.f[1].v)].months[parseInt(row.f[2].v)-1] = parseInt(row.f[3].v)
+						  	});
+				  		}
+				  		//barTable.drawTable(stationsTable);
+				});
+				
 			}
 			//If looking at the same data again
 			else if(($scope.curYearWeight === $scope.myBarType) && $scope.curYearWeight === "Year") {
+					console.log("c")
 					barTable.removeTable();
 					$scope.stationsClass = JSON.parse(JSON.stringify(stationsClass));
 					if($scope.myBarType === "Year"){
@@ -309,7 +332,7 @@
 						            }
 						          }
 						          if($scope.stationsClass.length != 0){
-						            barTable.drawTable($scope.stationsClass);
+						            //barTable.drawTable($scope.stationsClass);
 						          }
 						          AADTGraph.drawAADTGraph($scope.stationsClass,"class",$scope.myVehicleTypeArr,yearArr); 
 						        }
@@ -344,6 +367,7 @@
 				  		
 				  		
 						  		$scope.stationsWeight = JSON.parse(JSON.stringify(stationsWeight));
+						  		console.log("b")
 						  		barTable.removeTable();
 						  		AADTGraph.drawAADTGraphWeight($scope.stationsWeight,"weight",$scope.myTruckClass);
               					$scope.curYearWeight = "Weight"
@@ -354,6 +378,7 @@
 			}
 			else if(($scope.curYearWeight === $scope.myBarType) && $scope.curYearWeight === "Weight"){
 				$scope.stationsWeight = JSON.parse(JSON.stringify(stationsWeight));
+				console.log("a")
 				barTable.removeTable();
 				AADTGraph.drawAADTGraphWeight($scope.stationsWeight,"weight",$scope.myTruckClass);
               					
@@ -524,12 +549,21 @@
 				monthlyLineChart.drawHourlyLineChart($scope.stationsHourlyTraffic,$scope.myMonthlyTraffic);
 			}
 			
-		  	function getStationIndex(stationID,classT){
+		  	function getStationIndex(stationID,classT,station,YOD){
 		  		if(classT === "weight"){
 		  			return stationsWeight.map(function(el) {return el.stationId;}).indexOf(stationID)
 		  		}
 		  		else if(classT === "overweight"){
 		  			return overWeight.map(function(el) {return el.stationId;}).indexOf(stationID)
+		  		}
+		  		else if(classT === "state"){
+		  			return stationsTable.map(function(el){return el.state;}).indexOf(stationID)
+		  		}
+		  		else if(classT === "class2"){
+		  			return stationsTable[getStationIndex(stationID,"state")].stations.map(function(el){return el.stationId;}).indexOf(station)
+		  		}
+		  		else if(classT === "year"){
+		  			return stationsTable[getStationIndex(stationID,"state")].stations[getStationIndex(stationID,"class2",station)].years.map(function(el) {return el.year}).indexOf(YOD)
 		  		}
 		  		else if(classT === "month"){
 		  			return stationsMonth.map(function(el){return el.stationId;}).indexOf(stationID)

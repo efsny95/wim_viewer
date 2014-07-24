@@ -97,8 +97,11 @@ var AADTGraph ={
 							graphData[z].AAPT = graphData[z].AAPT/temp
 							graphData[z].AAPT = graphData[z].AAPT * 100
 						}
-						else{
+						else if((flagA && year.length == 1) || year.length == 0){
 							graphData[z].AAPT = temp
+						}
+						else if(flagB){
+							graphData[z].AAPT = 0.0
 						}
 					}
 				}
@@ -127,8 +130,11 @@ var AADTGraph ={
 							graphData[z].AASU = graphData[z].AASU/temp
 							graphData[z].AASU = graphData[z].AASU * 100
 						}
-						else{
+						else if((flagA && year.length == 1) || year.length == 0){
 							graphData[z].AASU = temp
+						}
+						else if(flagB){
+							graphData[z].AASU = 0.0
 						}
 					}
 				}
@@ -144,7 +150,6 @@ var AADTGraph ={
 								temp = graphData[z].years[count].ATT
 								flagA = true			
 							}
-
 							if(year.length > 1){
 								if(graphData[z].years[count].year === year[1]){
 									graphData[z].AATT = graphData[z].years[count].ATT
@@ -157,22 +162,73 @@ var AADTGraph ={
 							graphData[z].AATT = graphData[z].AATT/temp
 							graphData[z].AATT = graphData[z].AATT * 100
 						}
-						else{
+						else if((flagA && year.length == 1) || year.length == 0){
 							graphData[z].AATT = temp
+						}
+						else if(flagB){
+							graphData[z].AATT = 0.0
 						}
 					}
 				}
 			}
-			graphData[z].heights[0].y1 = graphData[z].AAPT	
-			graphData[z].heights[1].y0 = graphData[z].heights[0].y1
-			graphData[z].heights[1].y1 = graphData[z].heights[0].y1 + graphData[z].AASU	
-			graphData[z].heights[2].y0 = graphData[z].heights[1].y1
-			graphData[z].heights[2].y1 = graphData[z].heights[1].y1 + graphData[z].AATT	
-			
+
+			//logic problem with negative heights
+
+			var AAPTS = true
+			var AASUS = true
+			var AATTS = true
+
+			if(graphData[z].AAPT < 0){
+				AAPTS = false
+			}
+			if(graphData[z].AASU < 0){
+				AASUS = false
+			}
+			if(graphData[z].AATT < 0){
+				AATTS = false
+			}
+
+			graphData[z].heights[0].y1 = graphData[z].AAPT
+
+
+			if(AAPTS == AASUS){
+				graphData[z].heights[1].y0 = graphData[z].heights[0].y1
+			}
+			else{
+				graphData[z].heights[1].y0 = 0.0	
+			}
+			if(graphData[z].heights[1].y0 == 0.0){
+				graphData[z].heights[1].y1 = graphData[z].AASU
+			}
+			else{
+				graphData[z].heights[1].y1 = graphData[z].heights[0].y1 + graphData[z].AASU	
+			}
+
+
+
+			if(AATTS == AASUS){
+				graphData[z].heights[2].y0 = graphData[z].heights[1].y1
+			}
+			else if(AATTS == AAPTS){
+				graphData[z].heights[2].y0 = graphData[z].heights[0].y1
+			}
+			else{
+				graphData[z].heights[2].y0 = 0.0
+			}
+			if(graphData[z].heights[2].y0 == 0.0){
+				graphData[z].heights[2].y1 = graphData[z].AATT
+			}
+			else if(AATTS == AASUS){
+				graphData[z].heights[2].y1 = graphData[z].heights[1].y1 + graphData[z].AATT
+			}
+			else if(AATTS == AAPTS){
+				graphData[z].heights[2].y1 = graphData[z].heights[0].y1 + graphData[z].AATT	
+			}
 		}
 		graphData.sort(compareStations); 
+		console.log(graphData)
 		x.domain(graphData.map(function(d,i) { return graphData[i].stationId; }));
-		y.domain([0, d3.max(graphData, function(d,i) { return graphData[i].heights[2].y1; })]);
+		y.domain([d3.min(graphData, function(d,i) { return graphData[i].heights[2].y1; }), d3.max(graphData, function(d,i) { return graphData[i].heights[2].y1; })]);
 		//y.domain(d3.extent(function(d,i) { return graphData[i].heights[2].y1; })).nice();
 
 
@@ -219,7 +275,7 @@ var AADTGraph ={
 			  	//Below is the width of the bar
 			  	.attr("width", x.rangeBand())
 			  	//Below two values are used to set the height of the bar and make sure it displays upside down properly
-				.attr("y", function(d,i) { if(d.y1 == 0){return 0}; return y(Math.max(0,d.y1)); })
+				.attr("y", function(d,i) { if(d.y1 < 0){return y(d.y0)};return y(Math.max(0,d.y1)); })
 			  	.attr("height", function(d,i) {zz = 0; return Math.abs(y(d.y0) - y(d.y1)); })
 			  	//Below is used to set the color of the bar based on the data being examined.
 			  	.attr("style", function(d,i,zz) { 
@@ -250,15 +306,29 @@ var AADTGraph ={
 						else{
 							info = info+"<br> Years compared: "+year[0] + " VS " + year[1]
 						}
-						info = info +"<br> ADT: "+totalAADT(graphData[zz].years,"class");
-						if(i == 0){
-							info = info+"<br> APT: "+graphData[zz].AAPT+"</p>"
-						}
-						else if(i == 1){
-							info = info+"<br> ASU: "+graphData[zz].AASU+"</p>"
+						if(year.length == 2){
+							info = info +"<br>ADT: "+totalAADT(graphData[zz].years,"class");
+							if(i == 0){
+								info = info+"<br>% Change APT: "+graphData[zz].AAPT+"</p>"
+							}
+							else if(i == 1){
+								info = info+"<br>% ASU: "+graphData[zz].AASU+"</p>"
+							}
+							else{
+								info = info+"<br>% ATT: "+graphData[zz].AATT+"</p>"
+							}
 						}
 						else{
-							info = info+"<br> ATT: "+graphData[zz].AATT+"</p>"
+							info = info +"<br> ADT: "+totalAADT(graphData[zz].years,"class");
+							if(i == 0){
+								info = info+"<br> APT: "+graphData[zz].AAPT+"</p>"
+							}
+							else if(i == 1){
+								info = info+"<br> ASU: "+graphData[zz].AASU+"</p>"
+							}
+							else{
+								info = info+"<br> ATT: "+graphData[zz].AATT+"</p>"
+							}	
 						}
 
 					}
@@ -296,18 +366,7 @@ var AADTGraph ={
 		//Is used by the sorting function to sort given values
 		
 		function compareStations(a, b) {
-	      if((a.heights[2].y1 < 0) && (b.heights[2].y1 < 0) ){
-	      	return (-1 * a.heights[2].y1) - (-1 * b.heights[2].y1);
-	      }
-	      else if(b.heights[2].y1 < 0){
-	      	return a.heights[2].y1 - (-1* b.heights[2].y1);
-	      }
-	      else if(a.heights[2].y1 < 0){
-	      	return (-1 * a.heights[2].y1) - b.heights[2].y1;
-	      }
-	      else{
-		  	return a.heights[2].y1 - b.heights[2].y1;
-		  }
+	   		return Math.abs(Math.abs(a.heights[0].y1)+Math.abs(a.heights[1].y1)+Math.abs(a.heights[2].y1)) - Math.abs(Math.abs(b.heights[0].y1)+Math.abs(b.heights[1].y1)+Math.abs(b.heights[2].y1))
 		}	
 	},
 
