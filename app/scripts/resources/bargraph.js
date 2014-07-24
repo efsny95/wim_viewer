@@ -366,7 +366,7 @@ var AADTGraph ={
 		//Is used by the sorting function to sort given values
 		
 		function compareStations(a, b) {
-	   		return Math.abs(Math.abs(a.heights[0].y1)+Math.abs(a.heights[1].y1)+Math.abs(a.heights[2].y1)) - Math.abs(Math.abs(b.heights[0].y1)+Math.abs(b.heights[1].y1)+Math.abs(b.heights[2].y1))
+	   		return Math.abs(Math.abs(a.AAPT)+Math.abs(a.AATT)+Math.abs(a.AASU)) - Math.abs(Math.abs(b.AAPT)+Math.abs(b.AATT)+Math.abs(b.AASU))
 		}	
 	},
 
